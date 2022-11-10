@@ -1,5 +1,0 @@
-astropy
-matplotlib
-getdist
-chainconsumer
-tensiometer
