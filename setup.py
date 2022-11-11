@@ -4,7 +4,8 @@ from setuptools import setup, find_packages
 # version of the package
 __version__ = ""
 fname = os.path.join(
-    os.path.dirname(os.path.realpath(__file__)), "hsc_utils", "__version__.py"
+    os.path.dirname(os.path.realpath(__file__)),
+    "utils_shear_ana", "__version__.py"
 )
 with open(fname, "r") as ff:
     exec(ff.read())
@@ -13,7 +14,7 @@ with open(fname, "r") as ff:
 scripts = []
 
 setup(
-    name="hsc_utils",
+    name="utils_shear_ana",
     version=__version__,
     description="FPFS shear estimator",
     author="Xiangchong Li",
@@ -24,11 +25,13 @@ setup(
         "matplotlib",
         "getdist",
         "chainconsumer",
+        "healpy",
         "tensiometer",
+        "treecorr",
     ],
     packages=find_packages(),
     scripts=scripts,
     include_package_data=True,
     zip_safe=False,
-    url="https://github.com/mr-superonion/hsc_utils/",
+    url="https://github.com/mr-superonion/utils_shear_ana/",
 )

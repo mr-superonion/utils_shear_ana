@@ -1,0 +1,8 @@
+Metadata-Version: 2.1
+Name: utils-shear-ana
+Version: 0.0.1
+Summary: FPFS shear estimator
+Home-page: https://github.com/mr-superonion/utils_shear_ana/
+Author: Xiangchong Li
+Author-email: mr.superonion@hotmail.com
+Requires-Python: >=3.6
