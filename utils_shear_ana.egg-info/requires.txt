@@ -1,7 +1,0 @@
-astropy
-matplotlib
-getdist
-chainconsumer
-healpy
-tensiometer
-treecorr
