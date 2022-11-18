@@ -11,15 +11,19 @@ with open(fname, "r") as ff:
     exec(ff.read())
 
 
-scripts = []
+scripts = [
+        "bin/make_mock_datav.py",
+        "bin/make_cosmosis_s19a_ini.py",
+        "bin/submit_shear_job.py",
+        ]
 
 setup(
     name="utils_shear_ana",
     version=__version__,
-    description="FPFS shear estimator",
+    description="shear analysis utilities",
     author="Xiangchong Li",
     author_email="mr.superonion@hotmail.com",
-    python_requires=">=3.6",
+    python_requires=">=3.8",
     install_requires=[
         "astropy",
         "matplotlib",

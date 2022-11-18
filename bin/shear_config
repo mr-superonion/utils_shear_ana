@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+
+# This checks whether the script was executed or sourced
+# https://stackoverflow.com/questions/2683279/how-to-detect-if-a-script-is-being-sourced
+([[ -n $ZSH_EVAL_CONTEXT && $ZSH_EVAL_CONTEXT =~ :file$ ]] ||
+[[ -n $KSH_VERSION && $(cd "$(dirname -- "$0")" &&
+printf '%s' "${PWD%/}/")$(basename -- "$0") != "${.sh.file}" ]] ||
+[[ -n $BASH_VERSION ]] && (return 0 2>/dev/null)) && sourced=1 || sourced=0
+
+# This script should only be sourced
+if [[ "${sourced}" == "0" ]]
+then
+    echo "You must source this script to use it, not execute it:"
+    echo "source shear_config"
+    exit
+fi
+
+retval=$?
+if [ $retval -ne 0 ]
+then
+    return
+fi
+
+host="${HOSTNAME:0:2}"
+echo $host
+case "$host" in
+	"gw")   source /work/xiangchong.li/setupCosmosisMpich2.sh &&
+            export "cosmosis_utils=/work/xiangchong.li/superonionGW/code/hsc/utils_cosmosis" &&
+            export "shear_utils=/work/xiangchong.li/superonionGW/code/hsc/utils_shear_ana" &&
+            export "rootDir=/work/xiangchong.li/work/cosmicShear/";;
+            # for gw
+	"gf")   source /work/xiangchong.li/setupCosmosisMpich2.sh &&
+            export "cosmosis_utils=/work/xiangchong.li/superonionGW/code/hsc/utils_cosmosis" &&
+            export "shear_utils=/work/xiangchong.li/superonionGW/code/hsc/utils_shear_ana" &&
+            export "rootDir=/work/xiangchong.li/work/cosmicShear/";;
+            # for gfarm
+	"id")   source /work/xiangchong.li/setupCosmosisMpich2.sh &&
+            export "cosmosis_utils=/work/xiangchong.li/superonionGW/code/hsc/utils_cosmosis" &&
+            export "shear_utils=/work/xiangchong.li/superonionGW/code/hsc/utils_shear_ana" &&
+            export "rootDir=/work/xiangchong.li/work/cosmicShear/";;
+            # for idark
+	"m0")   source /work/xiangchong.li/setupCosmosisMpich2.sh &&
+            export "cosmosis_utils=/work/xiangchong.li/superonionGW/code/hsc/utils_cosmosis" &&
+            export "shear_utils=/work/xiangchong.li/superonionGW/code/hsc/utils_shear_ana" &&
+            export "rootDir=/work/xiangchong.li/work/cosmicShear/";;
+            # for vera
+	*) echo "we do not support the server $HOSTNAME";;
+esac
+
+echo "Your shell is now configured to run shear analysis code"

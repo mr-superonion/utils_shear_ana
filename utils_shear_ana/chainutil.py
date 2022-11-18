@@ -214,6 +214,8 @@ def estimate_parameters_from_chain(infname, chain=None, ptype="max", do_write=Tr
         infname (str):      input file name for chain
         chain (ndarray):    input chain [default: None]
         do_write (bool):    whether write down the estimated parameters
+    Returns:
+        max_post (dict):    maximum a posterior
     """
     if chain is None:
         chain = read_cosmosis_chain(infname)
@@ -248,7 +250,7 @@ def estimate_parameters_from_chain(infname, chain=None, ptype="max", do_write=Tr
         linewidths=0.8,
         legend_kwargs={"loc": "lower right", "fontsize": 20},
     )
-    MAP = c.analysis.get_max_posteriors()
+    max_post = c.analysis.get_max_posteriors()
 
     if do_write:
         npar_write = 0
@@ -268,7 +270,7 @@ def estimate_parameters_from_chain(infname, chain=None, ptype="max", do_write=Tr
                     nn = tmp.split(" = ")[0]
                     if nn in names:
                         # write the estimated parameter to the string
-                        tmp = "%s = %.6f\n" % (nn, MAP[nn])
+                        tmp = "%s = %.6f\n" % (nn, max_post[nn])
                         npar_write += 1
                     lines.append(tmp)
                 if end:
@@ -282,7 +284,7 @@ def estimate_parameters_from_chain(infname, chain=None, ptype="max", do_write=Tr
             something goes wrong?"
         with open(outfname, "wt") as outfile:
             outfile.write("".join(lines))
-    return MAP
+    return max_post
 
 
 def get_neff_from_chain(data):

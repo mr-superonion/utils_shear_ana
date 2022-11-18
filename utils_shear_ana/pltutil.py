@@ -808,7 +808,7 @@ def plot_chain_corner(clist, cnlist, blind_by, nlist):
 
     c = ChainConsumer()
     for ii, oo in enumerate(clist):
-        cc = colors0[ii+1]
+        cc = colors0[ii + 1]
         chain_name = cnlist[ii]
         ll = [
             oo[nlist[ii]] - avel[ii]
