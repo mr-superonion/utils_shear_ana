@@ -15,6 +15,7 @@ scripts = [
         "bin/make_mock_datav.py",
         "bin/make_cosmosis_s19a_ini.py",
         "bin/submit_shear_job.py",
+        "bin/shear_config",
         ]
 
 setup(
@@ -23,7 +24,7 @@ setup(
     description="shear analysis utilities",
     author="Xiangchong Li",
     author_email="mr.superonion@hotmail.com",
-    python_requires=">=3.8",
+    python_requires=">=3.9",
     install_requires=[
         "astropy",
         "matplotlib",

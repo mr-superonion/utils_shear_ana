@@ -21,9 +21,8 @@ then
     return
 fi
 
-host="${HOSTNAME:0:2}"
-echo $host
-case "$host" in
+echo "running on $server_name"
+case "$server_name" in
 	"gw")   source /work/xiangchong.li/setupCosmosisMpich2.sh &&
             export "cosmosis_utils=/work/xiangchong.li/superonionGW/code/hsc/utils_cosmosis" &&
             export "shear_utils=/work/xiangchong.li/superonionGW/code/hsc/utils_shear_ana" &&
@@ -39,7 +38,7 @@ case "$host" in
             export "shear_utils=/work/xiangchong.li/superonionGW/code/hsc/utils_shear_ana" &&
             export "rootDir=/work/xiangchong.li/work/cosmicShear/";;
             # for idark
-	"m0")   source /work/xiangchong.li/setupCosmosisMpich2.sh &&
+	"ve")   source /work/xiangchong.li/setupCosmosisMpich2.sh &&
             export "cosmosis_utils=/work/xiangchong.li/superonionGW/code/hsc/utils_cosmosis" &&
             export "shear_utils=/work/xiangchong.li/superonionGW/code/hsc/utils_shear_ana" &&
             export "rootDir=/work/xiangchong.li/work/cosmicShear/";;

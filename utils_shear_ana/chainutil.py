@@ -70,7 +70,9 @@ latexDict = {
     "m3": r"$\Delta{m}_3$",
     "m4": r"$\Delta{m}_4$",
     "logt_agn": r"$\Theta_{\mathrm{AGN}}$",
+    "a_bary": r"$A_{\mathrm{bary}}$",
 }
+
 rangeDict = {
     "omega_m": [0.10, 0.45],
     "omega_b": [0.03, 0.06],

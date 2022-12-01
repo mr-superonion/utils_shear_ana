@@ -29,6 +29,10 @@ from .mea2pcf import Interp1d
 
 from matplotlib.ticker import Locator
 
+# some default setups
+kde0 = 1.3
+stat0 = "max"
+
 
 chain_labels_dict = {
     "fiducial": "fiducial",
@@ -626,7 +630,7 @@ def plot_posterior_2D(
         weights=out["weight"],
         parameters=[chainutil.latexDict[name1], chainutil.latexDict[name2]],
         posterior=out["post"],
-        kde=1.2,
+        kde=kde0,
         name=chain_name,
         plot_point=False,
         color=cc,
@@ -654,7 +658,7 @@ def plot_posterior_2D(
             weights=out["weight"],
             parameters=[chainutil.latexDict[name1], chainutil.latexDict[name2]],
             posterior=out["post"],
-            kde=1.2,
+            kde=kde0,
             name=chain_name,
             plot_point=False,
             color=cc,
@@ -714,8 +718,8 @@ def plot_chain_summary(
             weights=oo["weight"],
             parameters=[chainutil.latexDict[nn] for nn in nlist],
             posterior=oo["post"],
-            kde=1.5,
-            statistics="mean",
+            kde=kde0,
+            statistics=stat0,
             plot_point=False,
             color="black",
         )
@@ -732,8 +736,8 @@ def plot_chain_summary(
             weights=oo["weight"],
             parameters=[chainutil.latexDict[nn] for nn in nlist],
             posterior=oo["post"],
-            kde=1.5,
-            statistics="mean",
+            kde=kde0,
+            statistics=stat0,
             plot_point=False,
             color="black",
             name=cnlist[i],
@@ -771,7 +775,7 @@ def plot_chain_summary(
     return fig
 
 
-def plot_chain_corner(clist, cnlist, blind_by, nlist):
+def plot_chain_corner(clist, cnlist, blind_by, nlist, truth=None):
     """Makes the corner plots for posteriors
 
     Args:
@@ -779,6 +783,7 @@ def plot_chain_corner(clist, cnlist, blind_by, nlist):
         cnlist (list):      a list of chain names
         blind_by (str):     whether to blind_by the reaults
         nlist (list):       a list of parameters
+        truth (list):       a list of truth parameters
     Returns:
         fig (figure):       figure
     """
@@ -795,20 +800,22 @@ def plot_chain_corner(clist, cnlist, blind_by, nlist):
             weights=oo["weight"],
             parameters=[chainutil.latexDict[nn] for nn in nlist],
             posterior=oo["post"],
-            kde=1.5,
-            statistics="mean",
+            kde=kde0,
+            statistics=stat0,
             plot_point=False,
             color="black",
         )
         stat = c.analysis.get_summary()
-        avel = [stat[chainutil.latexDict[nlist[i]]][1] for i in range(npar)]
+        avel = np.array(
+                [stat[chainutil.latexDict[nlist[i]]][1] for i in range(npar)]
+                )
         del c, oo, stat
     else:
-        avel = [0] * npar
+        avel = np.array([0] * npar)
 
     c = ChainConsumer()
     for ii, oo in enumerate(clist):
-        cc = colors0[ii + 1]
+        # cc = colors0[ii + 1]
         chain_name = cnlist[ii]
         ll = [
             oo[nlist[ii]] - avel[ii]
@@ -825,27 +832,32 @@ def plot_chain_corner(clist, cnlist, blind_by, nlist):
             weights=oo["weight"],
             parameters=[chainutil.latexDict[nn] for nn in nlist],
             posterior=oo["post"],
-            kde=1.2,
+            kde=kde0,
             name=chain_name,
             plot_point=False,
-            color=cc,
-            shade_alpha=0.4,
-            marker_alpha=0.5,
+            # color=cc,
+            # shade_alpha=0.4,
+            # marker_alpha=0.5,
         )
         del ll, ll2
     c.configure(
-        global_point=True,
-        statistics="mean",
+        global_point=False,
+        shade=False,
+        bar_shade=False,
+        statistics="max",
         label_font_size=20,
-        tick_font_size=15,
-        linewidths=0.8,
+        linewidths=2.0,
+        spacing=0.,
+        summary=False,
         legend_kwargs={"loc": "lower right", "fontsize": 20},
     )
-    fig = c.plotter.plot(figsize="PAGE")
+    stat = np.atleast_1d(c.analysis.get_summary())
+    exts = get_summary_extents(stat, nlist, clist, scale=2.5)
+    fig = c.plotter.plot(figsize=1.5, extents=exts, truth=truth)
     return fig
 
 
-def get_summary_extents(stat, pnlist, clist):
+def get_summary_extents(stat, pnlist, clist, scale=1.):
     """Estimates the extent for chains used for summary plot
 
     Args:
@@ -869,7 +881,7 @@ def get_summary_extents(stat, pnlist, clist):
     emax = np.max(np.array(emax), axis=0)
     ecen = (emin + emax) / 2.0
     edd = np.max(np.stack([np.abs(emin - ecen), np.abs(emax - ecen)]), axis=0) * 1.32
-    exts = [(ecen[i] - edd[i], ecen[i] + edd[i]) for i in range(npar)]
+    exts = [(ecen[i] - edd[i]*scale, ecen[i] + edd[i]*scale) for i in range(npar)]
     return exts
 
 
@@ -922,8 +934,8 @@ def plot_chain_summary2(
             weights=oo["weight"],
             parameters=[chainutil.latexDict[nn] for nn in pnlist],
             posterior=oo["post"],
-            kde=1.5,
-            statistics="mean",
+            kde=kde0,
+            statistics=stat0,
             plot_point=False,
             color="black",
         )
@@ -940,10 +952,10 @@ def plot_chain_summary2(
             weights=oo["weight"],
             parameters=[chainutil.latexDict[nn] for nn in pnlist],
             posterior=oo["post"],
-            kde=1.5,
+            kde=kde0,
         )
-    c.configure(global_point=True, statistics="mean")
-    stat = c.analysis.get_summary()
+    c.configure(global_point=False, statistics="max")
+    stat = np.atleast_1d(c.analysis.get_summary())
     exts = get_summary_extents(stat, pnlist, clist)
     parlims = get_summary_lims(stat, pnlist, clist)
     del stat
