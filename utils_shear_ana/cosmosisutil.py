@@ -15,32 +15,34 @@
 # see <http://www.lsstcorp.org/LegalNotices/>.
 #
 # python lib
+import os
+
+modules_default = "free_params_sig8    consistency  \n\
+    bbn_consistency     camb_sig8 \n\
+    load_nz             nzbias \n\
+    ia                  ia_z \n\
+    pk2cl               add_ia \n\
+    shear_m_bias        cl2xi \n\
+    add_sys             2pt_like"
 
 
 def make_config_ini(
-    outfname,
     chain_name="fid",
     blind_name="cat0",
     sampler="multinest",
     modules=None,
+    scales="scale_cut_fid",
 ):
     """Makes configuration ini file
 
     Args:
-        outfname (str):     output ini file name
         chain_name (str):   chain name
         blind_name (str):   blinding name
         sampler (str):      sampler name
         modules (str):      names of modules
     """
     if modules is None:
-        modules = "free_params_sig8    consistency\
-            bbn_consistency     camb_sig8\
-            load_nz             nzbias\
-            ia                  ia_z\
-            pk2cl               add_ia\
-            shear_m_bias        cl2xi\
-            add_sys             2pt_like"
+        modules = modules_default
 
     content = "[DEFAULT]\n\
 confDir=$cosmosis_utils/config/s19a/\n\
@@ -52,8 +54,8 @@ sampler = %s\n\
 \n\
 [pipeline]\n\
 fast_slow = T\n\
-values = %%(confDir)s/pars/%%(runname)s_values.ini\n\
-priors = %%(confDir)s/pars/%%(runname)s_priors.ini\n\
+values = %%(confDir)s/pars2/%%(runname)s_values.ini\n\
+priors = %%(confDir)s/pars2/%%(runname)s_priors.ini\n\
 \n\
 modules = %s\n\
 \n\
@@ -70,8 +72,11 @@ privacy = F\n\
 %%include $cosmosis_utils/config/s19a/models/cosmo.ini\n\
 %%include $cosmosis_utils/config/s19a/models/astro.ini\n\
 %%include $cosmosis_utils/config/s19a/models/sys.ini\n\
-%%include $cosmosis_utils/config/s19a/scales/scale_cut_fid.ini\n\
+%%include $cosmosis_utils/config/s19a/models/likelihood.ini\n\
+%%include $cosmosis_utils/config/s19a/scales/%s.ini\n\
 "
+    assert os.path.isdir("configs")
+    outfname = "configs/config_%s.ini" %chain_name
     with open(outfname, "wt") as outfile:
-        outfile.write(content%(chain_name, blind_name, sampler, modules))
+        outfile.write(content%(chain_name, blind_name, sampler, modules, scales))
     return

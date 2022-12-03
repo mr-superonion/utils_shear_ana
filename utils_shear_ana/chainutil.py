@@ -29,8 +29,9 @@ import matplotlib.colors as mcolors
 from cosmosis.output.text_output import TextColumnOutput
 
 latexDict = {
-    "omega_m": r"$\Omega_{\rm m}$",
-    "omega_b": r"$\Omega_{\rm b}$",
+    "omega_m": r"$\Omega_{\mathrm{m}}$",
+    "omega_b": r"$\Omega_{\mathrm{b}}$",
+    "ombh2": r"$\omega_{\mathrm{b}}",
     "sigma_8": r"$\sigma_8$",
     "s_8": r"$S_8$",
     "a_s": r"$A_s$",
