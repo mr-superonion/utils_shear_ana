@@ -7,7 +7,7 @@ from utils_shear_ana import cosmosisutil
 
 
 def main():
-    os.system("cp $shear_utils/bin/shear_config ./")
+    # os.system("cp $shear_utils/bin/shear_config ./")
     os.makedirs("checkpoints", exist_ok=True)
     os.makedirs("outputs", exist_ok=True)
     os.makedirs("stdout", exist_ok=True)

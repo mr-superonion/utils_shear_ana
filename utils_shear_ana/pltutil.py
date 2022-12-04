@@ -30,7 +30,7 @@ from .mea2pcf import Interp1d
 from matplotlib.ticker import Locator
 
 # some default setups
-kde0 = 1.3
+kde0 = 1.1
 stat0 = "max"
 
 
@@ -802,8 +802,6 @@ def plot_chain_corner(clist, cnlist, blind_by, nlist, truth=None):
             posterior=oo["post"],
             kde=kde0,
             statistics=stat0,
-            plot_point=False,
-            color="black",
         )
         stat = c.analysis.get_summary()
         avel = np.array(
@@ -815,17 +813,17 @@ def plot_chain_corner(clist, cnlist, blind_by, nlist, truth=None):
 
     c = ChainConsumer()
     for ii, oo in enumerate(clist):
-        # cc = colors0[ii + 1]
+        # blind sigma_8 and omega_m
         chain_name = cnlist[ii]
         ll = [
             oo[nlist[ii]] - avel[ii]
             for ii in range(npar)
-            if nlist[ii] in ["s8", "omega_m", "sigma_8"]
+            if nlist[ii] in ["s_8", "omega_m", "sigma_8"]
         ]
         ll2 = [
             oo[nlist[ii]]
             for ii in range(npar)
-            if nlist[ii] not in ["s8", "omega_m", "sigma_8"]
+            if nlist[ii] not in ["s_8", "omega_m", "sigma_8"]
         ]
         c.add_chain(
             ll + ll2,
@@ -835,23 +833,23 @@ def plot_chain_corner(clist, cnlist, blind_by, nlist, truth=None):
             kde=kde0,
             name=chain_name,
             plot_point=False,
-            # color=cc,
-            # shade_alpha=0.4,
-            # marker_alpha=0.5,
         )
         del ll, ll2
     c.configure(
         global_point=False,
         shade=False,
-        bar_shade=False,
+        flip=False,
+        bar_shade=True,
         statistics="max",
-        label_font_size=20,
-        linewidths=2.0,
+        label_font_size=14,
+        linewidths=1.5,
         spacing=0.,
-        summary=False,
+        max_ticks=4,
+        summary=True,
         legend_kwargs={"loc": "lower right", "fontsize": 20},
     )
     stat = np.atleast_1d(c.analysis.get_summary())
+    print(stat)
     exts = get_summary_extents(stat, nlist, clist, scale=2.5)
     fig = c.plotter.plot(figsize=1.5, extents=exts, truth=truth)
     return fig
@@ -881,7 +879,12 @@ def get_summary_extents(stat, pnlist, clist, scale=1.):
     emax = np.max(np.array(emax), axis=0)
     ecen = (emin + emax) / 2.0
     edd = np.max(np.stack([np.abs(emin - ecen), np.abs(emax - ecen)]), axis=0) * 1.32
-    exts = [(ecen[i] - edd[i]*scale, ecen[i] + edd[i]*scale) for i in range(npar)]
+    exts = [[ecen[i] - edd[i]*scale, ecen[i] + edd[i]*scale] for i in range(npar)]
+    for ie,ee in enumerate(exts):
+        nn = pnlist[ie]
+        if nn in chainutil.rangeDict.keys():
+            ee[0] = max(chainutil.rangeDict[nn][0],ee[0])
+            ee[1] = min(chainutil.rangeDict[nn][1],ee[1])
     return exts
 
 

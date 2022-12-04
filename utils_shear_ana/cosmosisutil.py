@@ -59,7 +59,7 @@ priors = %%(confDir)s/pars2/%%(runname)s_priors.ini\n\
 \n\
 modules = %s\n\
 \n\
-extra_output = cosmological_parameters/S_8\n\
+extra_output = cosmological_parameters/S_8 data_vector/2pt_chi2 cosmological_parameters/sigma_8\n\
 quiet=T\n\
 debug=F\n\
 \n\

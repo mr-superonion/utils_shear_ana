@@ -17,14 +17,19 @@ script="""
 export VAR=value
 
 cd %s
-source ./shear_config
+
+echo "TASK starts at:"
+date
 %s
+echo "TASK ends at:"
+date
 """
 
+# source ./shear_config
 
 def submit_job(inifile, queue, jobname=None):
     if jobname is None:
-        jobname = "x"+queue
+        jobname = inifile.split(".ini")[0].split("config_")[-1]
     # assume to use maximum resource for each queue
     host = os.environ["HOSTNAME"][0:2]
     if host=="id":
