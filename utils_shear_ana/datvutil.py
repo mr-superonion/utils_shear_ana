@@ -18,6 +18,7 @@
 
 import os
 import numpy as np
+import logging
 
 import astropy.io.fits as pyfits
 
@@ -418,6 +419,7 @@ def make_cosmosis_tpcf_hdulist_model(
 
     hdu0 = pyfits.PrimaryHDU()
     if covmat is None:
+        logging.warn("Do not have input covariance matrix, using a covariance matrix close to zero.")
         covmat = np.eye(len(tabP) + len(tabM)) * 1e-12
     assert covmat.shape == (len(tabP) + len(tabM), len(tabP) + len(tabM))
     hduCov = make_cscov_hdu(

@@ -15,13 +15,11 @@ def main():
     setups_fname = os.path.join(os.environ["cosmosis_utils"], "config/s19a", "setups.yaml")
     with open(setups_fname) as file:
         setup_list = yaml.load(file, Loader=yaml.FullLoader)
-    for ss in setup_list[0:1]:
+    for ss in setup_list[0:3]:
         for kk in ss.keys():
             cosmosisutil.make_config_ini(kk, **ss[kk])
             break
     return
-
-
 
 
 if __name__ == "__main__":

@@ -75,7 +75,7 @@ rangeDict = {
     "n_s": [0.87, 1.07],
     "h0": [0.62, 0.80],
     "a": [-5, 5],
-    "a_bary": [2.0, 3.13],
+    "a_bary": [1.5, 3.13],
     "a1": [-5., 5.],
     "a2": [-5., 5.],
     "alpha": [-5., 5.],
@@ -137,7 +137,7 @@ def read_cosmosis_chain(infname, flip_dz=True):
     nsample, npar = data.shape
     # assert nsample==metadata['nsample']
     colnames = [c.lower().split("--")[-1] for c in colnames]
-    types = [tp for tp in zip(colnames, [">f8"] * npar)]
+    types = list(set([tp for tp in zip(colnames, [">f8"] * npar)]))
     cal_s8 = False
     if ("s_8" not in colnames) and ("omega_m" in colnames) and ("sigma_8" in colnames):
         types.append(("s_8", ">f8"))
@@ -249,7 +249,7 @@ def estimate_parameters_from_chain(infname, ptype="map", do_write=True):
                     nn = tmp.split(" = ")[0]
                     if nn in names:
                         # write the estimated parameter to the string
-                        tmp = "%s = %.6f\n" % (nn, max_post[nn])
+                        tmp = "%s = %.6E\n" % (nn, max_post[nn])
                         npar_write += 1
                     lines.append(tmp)
                 if end:

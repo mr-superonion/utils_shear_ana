@@ -31,7 +31,6 @@ def make_config_ini(
     blind_name="cat0",
     sampler="multinest",
     modules=None,
-    scales="scale_cut_fid",
 ):
     """Makes configuration ini file
 
@@ -73,10 +72,9 @@ privacy = F\n\
 %%include $cosmosis_utils/config/s19a/models/astro.ini\n\
 %%include $cosmosis_utils/config/s19a/models/sys.ini\n\
 %%include $cosmosis_utils/config/s19a/models/likelihood.ini\n\
-%%include $cosmosis_utils/config/s19a/scales/%s.ini\n\
 "
     assert os.path.isdir("configs")
     outfname = "configs/config_%s.ini" %chain_name
     with open(outfname, "wt") as outfile:
-        outfile.write(content%(chain_name, blind_name, sampler, modules, scales))
+        outfile.write(content%(chain_name, blind_name, sampler, modules))
     return

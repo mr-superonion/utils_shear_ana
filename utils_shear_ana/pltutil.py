@@ -30,7 +30,7 @@ from .mea2pcf import Interp1d
 from matplotlib.ticker import Locator
 
 # some default setups
-kde0 = 1.1
+kde0 = 0.5
 stat0 = "max"
 
 
@@ -840,7 +840,7 @@ def plot_chain_corner(clist, cnlist, blind_by, nlist, truth=None):
         shade=False,
         flip=False,
         bar_shade=True,
-        statistics="max",
+        statistics=stat0,
         label_font_size=14,
         linewidths=1.5,
         spacing=0.,
