@@ -75,7 +75,7 @@ rangeDict = {
     "n_s": [0.87, 1.07],
     "h0": [0.62, 0.80],
     "a": [-5, 5],
-    "a_bary": [1.5, 3.13],
+    "a_bary": [1.8, 3.13],
     "a1": [-5., 5.],
     "a2": [-5., 5.],
     "alpha": [-5., 5.],
@@ -161,7 +161,7 @@ def read_cosmosis_chain(infname, flip_dz=True):
     return out
 
 
-def read_cosmosis_maxlike(infname):
+def read_cosmosis_max(infname):
     """Reads the maxlike output of cosmosis
 
     Args:
@@ -169,11 +169,7 @@ def read_cosmosis_maxlike(infname):
     Returns:
         out (ndarray):      chain
     """
-    try:
-        output_info = TextColumnOutput.load_from_options({"filename": infname})
-    except:
-        print("Cannot read file: %s" % infname)
-        return None
+    output_info = TextColumnOutput.load_from_options({"filename": infname})
     colnames, data, _, _, _ = output_info
     data = data[0]
     colnames = [c.lower().split("--")[-1] for c in colnames]

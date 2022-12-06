@@ -16,6 +16,7 @@
 #
 # python lib
 import os
+import logging
 
 modules_default = "free_params_sig8    consistency  \n\
     bbn_consistency     camb_sig8 \n\
@@ -63,7 +64,7 @@ quiet=T\n\
 debug=F\n\
 \n\
 [output]\n\
-filename = outputs/out_%%(runname)s.txt\n\
+filename = outputs/%s_%%(runname)s.txt\n\
 format=text\n\
 privacy = F\n\
 \n\
@@ -74,7 +75,10 @@ privacy = F\n\
 %%include $cosmosis_utils/config/s19a/models/likelihood.ini\n\
 "
     assert os.path.isdir("configs")
-    outfname = "configs/config_%s.ini" %chain_name
-    with open(outfname, "wt") as outfile:
-        outfile.write(content%(chain_name, blind_name, sampler, modules))
+    outfname = "configs/%s_%s.ini" %(sampler, chain_name)
+    if not os.path.isfile(outfname):
+        with open(outfname, "wt") as outfile:
+            outfile.write(content%(chain_name, blind_name, sampler, modules, sampler))
+    else:
+        logging.warn("Already has output ini file: %s" %outfname)
     return

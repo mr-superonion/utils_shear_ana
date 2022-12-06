@@ -1,47 +1,56 @@
 #!/usr/bin/env python
 
-import numpy as np
+import os
 import astropy.io.fits as pyfits
-from utils_shear_ana import datvutil
+from utils_shear_ana import datvutil, mea2pcf
 from argparse import ArgumentParser
 
-def make_model_mock(fname, cdir):
+wrkDir = os.environ["homeWrk"]
+
+cminP = 2.94049251
+cminM = cminP*4.38
+cmaxP = 56.52
+cmaxM = 247.75
+
+def make_model_mock(Dir, blind=0):
     """Gets logr bins for xip and xim
 
     Args:
         fname (str):    Cosmosis 2pt fits file name
         cdir (str):     Cosmosis output directory
     """
-    # get the angular separations and the covariance
-    hdulin=  pyfits.open(fname)
 
-    # for pre1 the mask is the same for each cross zbins
-    msk=(hdulin[2].data['bin1']==1)&(hdulin[2].data['bin2']==1)
-    logr1=np.log(hdulin[2].data['ang'][msk])
-    print("angular bins for Xip:")
-    print("minimum and maximum scales [arcmin]:")
-    print(np.exp(logr1.min()),np.exp(logr1.max()))
-    print(len(logr1))
+    ver   =  "cut1"
+    blind_ver= "cat%d" %blind
 
-    msk=(hdulin[3].data['bin1']==1)&(hdulin[3].data['bin2']==1)
-    logr2=np.log(hdulin[3].data['ang'][msk])
-    print("angular bins for Xim:")
-    print("minimum and maximum scales [arcmin]:")
-    print(np.exp(logr2.min()),np.exp(logr2.max()))
-    print(len(logr2))
-    cov=hdulin[1].data
-    out   =  datvutil.make_cosmosis_tpcf_hdulist_model(cdir,logr1,logr2,cov)
-    return out
+    cor=mea2pcf.corDF
+    rnom=cor.rnom
+
+    mskp=(rnom>cminP)&(rnom<cmaxP)
+    mskm=(rnom>cminM)&(rnom<cmaxM)
+
+    # sampling points at logr
+    logr1=cor.logr[mskp]
+    logr2=cor.logr[mskm]
+
+    # covariance
+    cov= pyfits.getdata(os.path.join(wrkDir,'cosmicShear/tpcf/%s/cov_%s.fits' %(blind_ver,ver)))
+    assert cov.shape==((len(logr1)+len(logr2))*10,(len(logr1)+len(logr2))*10)
+    ofname=  '%s.fits' %Dir
+    # msk array
+    out   =  datvutil.make_cosmosis_tpcf_hdulist_model(Dir,logr1,logr2,cov)
+    out.writeto(ofname,overwrite=True)
+    return
 
 
 if __name__ == "__main__":
     parser = ArgumentParser(description="fpfs procsim")
     parser.add_argument(
-        "--fitsname", required=True, type=str, help="cosmosis 2pt fits data"
+        'dirname', type=str, help="cosmosis model file name", nargs='+',
     )
     parser.add_argument(
-        "--cosoDir", required=True, type=str, help="cosmosis output directory"
+        "--blind", type=int, default=0, help="blinded version, 0, 1 or 2"
     )
-    parser.add_argument(
-        "--outDir", required=True, type=str, help="output directory"
-    )
+    args = parser.parse_args()
+    for dd in args.dirname:
+        make_model_mock(dd, args.blind)

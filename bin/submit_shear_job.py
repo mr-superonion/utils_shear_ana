@@ -27,9 +27,8 @@ date
 
 # source ./shear_config
 
-def submit_job(inifile, queue, jobname=None):
-    if jobname is None:
-        jobname = inifile.split(".ini")[0].split("config_")[-1]
+def submit_job(inifile, queue):
+    jobname = inifile.split(".ini")[0].split("configs/")[-1]
     # assume to use maximum resource for each queue
     host = os.environ["HOSTNAME"][0:2]
     if host=="id":
@@ -42,7 +41,7 @@ def submit_job(inifile, queue, jobname=None):
     elif host == "gw":
         nodes_ppn = {
                 "tiny":[1,1,1], "mini":[1,28,28],
-                "mini2":[4, 28, 112], "small":[1,504,504]
+                "small":[4, 28, 112], "mini2":[1,504,504]
                 }[queue]
         walltime = "#PBS -l walltime=7:00:00:00"
     elif host == "fe": # gfarm
@@ -77,7 +76,7 @@ def submit_job(inifile, queue, jobname=None):
 if __name__ == "__main__":
     # arguments
     parser = argparse.ArgumentParser()
-    parser.add_argument("inifile", type=str,
+    parser.add_argument("inifile", type=str, nargs='+',
             help="path of config file")
     parser.add_argument("--queue", type=str,
             help="tiny, mini, small, large", default="mini"
@@ -87,4 +86,5 @@ if __name__ == "__main__":
             )
 
     args = parser.parse_args()
-    submit_job(args.inifile, args.queue, args.jobname)
+    for ff in args.inifile:
+        submit_job(ff, args.queue)

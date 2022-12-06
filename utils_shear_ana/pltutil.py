@@ -22,7 +22,6 @@ from . import chainutil
 import matplotlib.pyplot as plt
 import astropy.io.fits as pyfits
 import matplotlib.lines as mlines
-import matplotlib.colors as mcolors
 from matplotlib.colors import SymLogNorm
 from chainconsumer import ChainConsumer
 from .mea2pcf import Interp1d
@@ -30,7 +29,7 @@ from .mea2pcf import Interp1d
 from matplotlib.ticker import Locator
 
 # some default setups
-kde0 = 0.5
+kde0 = 1.1
 stat0 = "max"
 
 
@@ -121,6 +120,8 @@ hsc_marker = {
     "XMM": "o",
 }
 
+colors = plt.rcParams['axes.prop_cycle'].by_key()['color']
+
 colors0 = [
     "black",
     "#1A85FF",
@@ -130,12 +131,6 @@ colors0 = [
     "#35C3D7",
     "#8B0F8C",
 ]
-
-colors = []
-for _ic, _cc in enumerate(colors0):
-    cc2 = mcolors.ColorConverter().to_rgb(_cc)
-    colors.append((cc2[0], cc2[1], cc2[2], 1 - 0.1 * _ic))
-    del cc2
 
 cblue = ["#004c6d", "#346888", "#5886a5", "#7aa6c2", "#9dc6e0", "#c1e7ff"]
 
@@ -603,179 +598,7 @@ def plot_cov_coeff(covIn):
     return fig
 
 
-def plot_posterior_2D(
-    out, name1, name2, test=True, blind=False, chain_name="", statname="max"
-):
-    """Plots the 2D posterior with contours
-
-    Args:
-        out (ndarray):  a MC chain with nested sampling
-        name1 (str):    column name of the first parameter [x-axis]
-        name2 (str):    column name of the second parameter [x-axis]
-        test (bool):    whether it is a test on simulation [T] or on real data [F]
-        blind (bool):   whether do blinding
-    Returns:
-        fig (figure):   figure
-    """
-    if test:
-        true_x = chainutil.wmap13Dict[name1]
-        true_y = chainutil.wmap13Dict[name2]
-        truth = [true_x, true_y]
-    else:
-        truth = None
-    c = ChainConsumer()
-    cc = colors0[1]  # color
-    c.add_chain(
-        [out[name1], out[name2]],
-        weights=out["weight"],
-        parameters=[chainutil.latexDict[name1], chainutil.latexDict[name2]],
-        posterior=out["post"],
-        kde=kde0,
-        name=chain_name,
-        plot_point=False,
-        color=cc,
-        shade_alpha=0.5,
-        marker_alpha=0.5,
-    )
-    c.configure(
-        global_point=True,
-        statistics=statname,
-        label_font_size=20,
-        tick_font_size=15,
-        linewidths=0.8,
-        legend_kwargs={"loc": "lower right", "fontsize": 20},
-    )
-    if blind:
-        stat = c.analysis.get_summary()
-        ave1 = stat[chainutil.latexDict[name1]][1]
-        ave2 = stat[chainutil.latexDict[name2]][1]
-        out[name1] = out[name1] - ave1
-        out[name2] = out[name2] - ave2
-        del c
-        c = ChainConsumer()
-        c.add_chain(
-            [out[name1], out[name2]],
-            weights=out["weight"],
-            parameters=[chainutil.latexDict[name1], chainutil.latexDict[name2]],
-            posterior=out["post"],
-            kde=kde0,
-            name=chain_name,
-            plot_point=False,
-            color=cc,
-            shade_alpha=0.5,
-            marker_alpha=0.5,
-        )
-        c.configure(
-            global_point=True,
-            statistics=statname,
-            label_font_size=20,
-            tick_font_size=15,
-            linewidths=0.8,
-            legend_kwargs={"loc": "lower right", "fontsize": 20},
-        )
-    v1l = c.analysis.get_summary()[chainutil.latexDict[name1]]
-    v2l = c.analysis.get_summary()[chainutil.latexDict[name2]]
-    dd1 = v1l[2] - v1l[0]
-    dd2 = v2l[2] - v2l[0]
-    range1 = [v1l[0] - dd1, v1l[2] + dd1]
-    range2 = [v2l[0] - dd2, v2l[2] + dd2]
-    fig = c.plotter.plot(figsize="COLUMN", truth=truth, extents=[range1, range2])
-    fig.axes[2].grid()
-    fig.axes[2].scatter(v1l[1], v2l[1], s=100, marker="x", color=cc, linewidths=2)
-    fig.axes[0].set_frame_on(False)
-    fig.axes[3].set_frame_on(False)
-    # stat=c.analysis.get_summary()
-    # fig.axes[2].plot(stat[chainutil.latexDict[name1]][1],stat[chainutil.latexDict[name2]][1],\
-    #         'x',c=colors0[-1])
-    plt.subplots_adjust(wspace=0.0, hspace=0.0)
-    return fig
-
-
-def plot_chain_summary(
-    clist, cnlist, blind_by="fiducial", nlist=["omega_m", "sigma_8", "s_8"]
-):
-    """Plots the summary statistics for posteriors
-
-    Args:
-        clist (list):       a list of MC chain with nested sampling
-        cnlist (list):      a list of chain names
-        blind_by (str):     whether to blind_by the reaults
-        nlist (list):       a list of parameters
-    Returns:
-        fig (figure):       figure
-    """
-    npar = len(nlist)
-    nchain = len(clist)
-    if blind_by is not None:
-        assert (
-            blind_by in cnlist
-        ), "The blinding prarmeter ('blind_by') \
-            is not in the chain name list (cnlist)"
-        c = ChainConsumer()
-        oo = clist[cnlist.index(blind_by)]
-        c.add_chain(
-            [oo[nlist[ii]] for ii in range(npar)],
-            weights=oo["weight"],
-            parameters=[chainutil.latexDict[nn] for nn in nlist],
-            posterior=oo["post"],
-            kde=kde0,
-            statistics=stat0,
-            plot_point=False,
-            color="black",
-        )
-        stat = c.analysis.get_summary()
-        avel = [stat[chainutil.latexDict[nlist[i]]][1] for i in range(npar)]
-        del c, oo, stat
-    else:
-        avel = [0] * npar
-
-    c = ChainConsumer()
-    for i, oo in enumerate(clist):
-        c.add_chain(
-            [oo[nlist[ii]] - avel[ii] for ii in range(npar)],
-            weights=oo["weight"],
-            parameters=[chainutil.latexDict[nn] for nn in nlist],
-            posterior=oo["post"],
-            kde=kde0,
-            statistics=stat0,
-            plot_point=False,
-            color="black",
-            name=cnlist[i],
-        )
-    c.configure(
-        legend_color_text=False,
-        label_font_size=20,
-        spacing=0.0,
-        serif=True,
-        max_ticks=2,
-    )
-    c.configure_truth(ls="--")
-    stat = c.analysis.get_summary()
-    emin = [
-        [stat[j][chainutil.latexDict[nlist[i]]][0] for i in range(npar)]
-        for j in range(nchain)
-    ]
-    emax = [
-        [stat[j][chainutil.latexDict[nlist[i]]][-1] for i in range(npar)]
-        for j in range(nchain)
-    ]
-    emin = np.min(np.array(emin), axis=0)
-    emax = np.max(np.array(emax), axis=0)
-    ecen = (emin + emax) / 2.0
-    edd = np.max(np.stack([np.abs(emin - ecen), np.abs(emax - ecen)]), axis=0) * 1.5
-    ext = [(ecen[i] - edd[i], ecen[i] + edd[i]) for i in range(npar)]
-    fig = c.plotter.plot_summary(
-        figsize=1.5,
-        truth=cnlist[0],
-        extra_parameter_spacing=1.8,
-        vertical_spacing_ratio=0.8,
-        errorbar=True,
-        extents=ext,
-    )
-    return fig
-
-
-def plot_chain_corner(clist, cnlist, blind_by, nlist, truth=None):
+def plot_chain_corner(clist, cnlist, blind_by, nlist, truth=None, scale=2.5):
     """Makes the corner plots for posteriors
 
     Args:
@@ -787,6 +610,15 @@ def plot_chain_corner(clist, cnlist, blind_by, nlist, truth=None):
     Returns:
         fig (figure):       figure
     """
+    if (scale < 1.5) and (scale > 1.05):
+        sigmas = [0, 1]
+    elif scale < 3:
+        sigmas = [0, 1, 2]
+    elif scale <  10:
+        sigmas = [0, 1, 2, 3]
+    else:
+        raise ValueError("scale need to be greater than 1.05 and smaller than 10")
+
     npar = len(nlist)
     if blind_by is not None:
         assert (
@@ -845,12 +677,13 @@ def plot_chain_corner(clist, cnlist, blind_by, nlist, truth=None):
         linewidths=1.5,
         spacing=0.,
         max_ticks=4,
+        sigmas = sigmas,
         summary=True,
         legend_kwargs={"loc": "lower right", "fontsize": 20},
     )
     stat = np.atleast_1d(c.analysis.get_summary())
     print(stat)
-    exts = get_summary_extents(stat, nlist, clist, scale=2.5)
+    exts = get_summary_extents(stat, nlist, clist, scale=scale)
     fig = c.plotter.plot(figsize=1.5, extents=exts, truth=truth)
     return fig
 
@@ -907,7 +740,7 @@ def get_summary_lims(stat, pnlist, clist):
     return parlims
 
 
-def plot_chain_summary2(
+def plot_chain_summary(
     clist, cnlist, blind_by="fiducial", pnlist=["omega_m", "sigma_8", "s_8"], nstat=1
 ):
     """Plots the summary for a list of chains
@@ -939,8 +772,6 @@ def plot_chain_summary2(
             posterior=oo["post"],
             kde=kde0,
             statistics=stat0,
-            plot_point=False,
-            color="black",
         )
         stat = c.analysis.get_summary()
         avel = [stat[chainutil.latexDict[pnlist[i]]][1] for i in range(npar)]
@@ -957,19 +788,20 @@ def plot_chain_summary2(
             posterior=oo["post"],
             kde=kde0,
         )
-    c.configure(global_point=False, statistics="max")
+    c.configure(global_point=False, statistics=stat0)
     stat = np.atleast_1d(c.analysis.get_summary())
-    exts = get_summary_extents(stat, pnlist, clist)
     parlims = get_summary_lims(stat, pnlist, clist)
-    del stat
+    extent = get_summary_extents(stat, pnlist, clist, scale=1.5)
+
     if nstat == 1:
         parlims = [parlims]
     elif nstat == 2:
-        c.configure(global_point=True, statistics="max")
-        stat = c.analysis.get_summary()
-        parlims2 = get_summary_lims(stat, pnlist, clist)
-        parlims = [parlims, parlims2]
-        del stat, parlims2
+        pass
+        # c.configure(global_point=True, statistics=stat0)
+        # stat = c.analysis.get_summary()
+        # parlims2 = get_summary_lims(stat, pnlist, clist)
+        # parlims = [parlims, parlims2]
+        # del stat, parlims2
     else:
         raise ValueError("nstat can only be 1 or 2.")
 
@@ -979,8 +811,11 @@ def plot_chain_summary2(
     lower0 = None
     upper0 = None
     for h in range(nstat):
+        # iteration on stats
         for j in range(npar):
+            # iteration on parameters
             for i in range(nchain):
+                # iteration on chains
                 lower, mid, upper = tuple(parlims[h][i][j])
                 if h == 0 and i == 0:
                     lower0 = lower
@@ -993,12 +828,13 @@ def plot_chain_summary2(
                     fmt=fmts[h],
                     alpha=alphas[h],
                     elinewidth=1.6,
-                    color=colors0[h + 1],
+                    color=colors[0],
                 )
             if h == 0:
                 axes[j].axvspan(lower0, upper0, color="gray", alpha=0.2)
                 axes[j].set_title(chainutil.latexDict[pnlist[j]], fontsize=20)
-                axes[j].set_xlim(exts[j])
+                axes[j].set_xlim(extent[j])
+    plt.ylim(-0.5, nchain-0.5)
     plt.yticks(range(nchain), cnlist)
     plt.gca().invert_yaxis()
     plt.subplots_adjust(wspace=0, hspace=0)
