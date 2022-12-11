@@ -18,9 +18,7 @@
 
 import numpy as np
 from scipy import stats
-from getdist import MCSamples
 from chainconsumer import ChainConsumer
-from tensiometer import gaussian_tension
 
 from cosmosis.output.text_output import TextColumnOutput
 
@@ -75,7 +73,7 @@ rangeDict = {
     "n_s": [0.87, 1.07],
     "h0": [0.62, 0.80],
     "a": [-5, 5],
-    "a_bary": [1.8, 3.13],
+    "a_bary": [2.0, 3.13],
     "a1": [-5., 5.],
     "a2": [-5., 5.],
     "alpha": [-5., 5.],
@@ -127,8 +125,7 @@ def read_cosmosis_chain(infname, flip_dz=True):
     try:
         output_info = TextColumnOutput.load_from_options({"filename": infname})
     except:
-        print("Cannot read file: %s" % infname)
-        return None
+        raise IOError("Cannot read file: %s" % infname)
     colnames, data, metadata, _, final_meta = output_info
     metadata = metadata[0]
     final_meta = final_meta[0]
@@ -153,11 +150,14 @@ def read_cosmosis_chain(infname, flip_dz=True):
         alpha = 0.5
         out["s_8"] = out["sigma_8"] * (out["omega_m"] / 0.3) ** alpha
 
+    # flip the delta_z
     if flip_dz:
-        for i in range(1, 6):
+        for i in range(1, 20):
             inm = "bias_%d" % i
             if inm in colnames:
                 out[inm] = -1 * out[inm]
+            else:
+                break
     return out
 
 
@@ -203,7 +203,6 @@ def estimate_parameters_from_chain(infname, ptype="map", do_write=True):
         max_post (dict):    maximum a posterior
     """
     chain = read_cosmosis_chain(infname, flip_dz=False)
-    assert isinstance(chain, np.ndarray)
 
     outfname = infname[:-4] + "_%s.ini" % ptype
     names = list(chain.dtype.names)
@@ -262,26 +261,28 @@ def estimate_parameters_from_chain(infname, ptype="map", do_write=True):
     return max_post
 
 
-def get_neff_from_chain(data):
-    """Gets the effective degrees of freedom from nested chain
+# from getdist import MCSamples
+# from tensiometer import gaussian_tension
+# def get_neff_from_chain(data):
+#     """Gets the effective degrees of freedom from nested chain
 
-    Args:
-        data (ndarray):  nested chains
-    Returns:
-        neff (float):  effective degrees of freedom
-    """
-    names = list(data.dtype.names)
-    for nn in names:
-        if nn in ["like", "post", "weight", "prior", "s_8"]:
-            names.remove(nn)
-    c = MCSamples(
-        samples=[data[nn] for nn in names],
-        loglikes=data["like"],
-        weights=data["weight"],
-        names=names,
-    )
-    p = MCSamples(
-        samples=[data[nn] for nn in names], names=names, weights=np.exp(data["prior"])
-    )
-    neff = gaussian_tension.get_Neff(c, prior_chain=p)
-    return neff
+#     Args:
+#         data (ndarray):  nested chains
+#     Returns:
+#         neff (float):  effective degrees of freedom
+#     """
+#     names = list(data.dtype.names)
+#     for nn in names:
+#         if nn in ["like", "post", "weight", "prior", "s_8"]:
+#             names.remove(nn)
+#     c = MCSamples(
+#         samples=[data[nn] for nn in names],
+#         loglikes=data["like"],
+#         weights=data["weight"],
+#         names=names,
+#     )
+#     p = MCSamples(
+#         samples=[data[nn] for nn in names], names=names, weights=np.exp(data["prior"])
+#     )
+#     neff = gaussian_tension.get_Neff(c, prior_chain=p)
+#     return neff

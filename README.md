@@ -1,6 +1,6 @@
 # utils_shear_ana
 
-Some useful (I hope) utilities for shear analysis
+Some useful utilities for shear analysis
 
 ## Installation
 

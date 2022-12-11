@@ -17,13 +17,13 @@
 # python lib
 import os
 import numpy as np
-import seaborn as sns
-from . import chainutil
 import matplotlib.pyplot as plt
 import astropy.io.fits as pyfits
 import matplotlib.lines as mlines
 from matplotlib.colors import SymLogNorm
 from chainconsumer import ChainConsumer
+
+from . import chainutil
 from .mea2pcf import Interp1d
 
 from matplotlib.ticker import Locator
@@ -553,31 +553,33 @@ def make_tpcf_plot(title="xi", nzs=4):
     return fig, axes
 
 
-def plot_cov(covIn, vmin=-3e-12, vmax=3e-11):
-    """Makes plot for covariance matrix for cosmic shear
 
-    Args:
-        covIn (ndarray):    covariance matrix
-        vmin (float):       minimum value
-        vmax (float):       maximum value
-    Returns:
-        fig (figure):       figure for covariance
-    """
-    fig = plt.figure(figsize=(12, 10))
-    norm = SymLogNorm(linthresh=1e-13, vmin=vmin, vmax=vmax)
-    ax = sns.heatmap(
-        covIn,
-        cmap="RdBu",
-        norm=norm,
-        square=True,
-    )
-    ax.invert_yaxis()
-    ny, nx = covIn.shape
-    ax.set_xticks(np.arange(0, nx, 20))
-    ax.set_xticklabels([str(i) for i in np.arange(0, nx, 20)])
-    ax.set_yticks(np.arange(0, ny, 20))
-    ax.set_yticklabels([str(i) for i in np.arange(0, ny, 20)])
-    return fig
+# import seaborn as sns
+# def plot_cov(covIn, vmin=-3e-12, vmax=3e-11):
+#     """Makes plot for covariance matrix for cosmic shear
+
+#     Args:
+#         covIn (ndarray):    covariance matrix
+#         vmin (float):       minimum value
+#         vmax (float):       maximum value
+#     Returns:
+#         fig (figure):       figure for covariance
+#     """
+#     fig = plt.figure(figsize=(12, 10))
+#     norm = SymLogNorm(linthresh=1e-13, vmin=vmin, vmax=vmax)
+#     ax = sns.heatmap(
+#         covIn,
+#         cmap="RdBu",
+#         norm=norm,
+#         square=True,
+#     )
+#     ax.invert_yaxis()
+#     ny, nx = covIn.shape
+#     ax.set_xticks(np.arange(0, nx, 20))
+#     ax.set_xticklabels([str(i) for i in np.arange(0, nx, 20)])
+#     ax.set_yticks(np.arange(0, ny, 20))
+#     ax.set_yticklabels([str(i) for i in np.arange(0, ny, 20)])
+#     return fig
 
 
 def plot_cov_coeff(covIn):
