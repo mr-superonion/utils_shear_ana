@@ -28,16 +28,16 @@ modules_default = "free_params_sig8    consistency  \n\
 
 
 def make_config_ini(
-    chain_name="fid",
-    blind_name="cat0",
+    runname="fid",
+    datname="cat0",
     sampler="multinest",
     modules=None,
 ):
-    """Makes configuration ini file
+    """Makes configuration ini file to analysis data
 
     Args:
-        chain_name (str):   chain name
-        blind_name (str):   blinding name
+        runname (str):   chain name
+        datname (str):      data version name [cat0, cat1 or simulations]
         sampler (str):      sampler name
         modules (str):      names of modules
     """
@@ -47,7 +47,7 @@ def make_config_ini(
     content = "[DEFAULT]\n\
 confDir=$cosmosis_utils/config/s19a/\n\
 runname=%s\n\
-blindname=%s\n\
+datname=%s\n\
 \n\
 [runtime]\n\
 sampler = %s\n\
@@ -75,10 +75,73 @@ privacy = F\n\
 %%include $cosmosis_utils/config/s19a/models/likelihood.ini\n\
 "
     assert os.path.isdir("configs")
-    outfname = "configs/%s_%s.ini" %(sampler, chain_name)
+    outfname = "configs/%s_%s_%s.ini" %(sampler, runname, datname)
     if not os.path.isfile(outfname):
         with open(outfname, "wt") as outfile:
-            outfile.write(content%(chain_name, blind_name, sampler, modules, sampler))
+            outfile.write(content%(runname, datname, sampler, modules, sampler))
+    else:
+        logging.warn("Already has output ini file: %s" %outfname)
+    return
+
+
+def make_config_sim_ini(
+    runname="fid",
+    datname="cowls85",
+    sampler="multinest",
+    modules=None,
+):
+    """Makes configuration ini file to analysis simulation
+
+    Args:
+        runname (str):   chain name
+        datname (str):      data version name [cat0, cat1 or simulations]
+        sampler (str):      sampler name
+        modules (str):      names of modules
+    """
+    if modules is None:
+        modules = modules_default
+
+    content = "[DEFAULT]\n\
+confDir=$cosmosis_utils/config/s19a/\n\
+runname=%s\n\
+datname=%s\n\
+\n\
+[runtime]\n\
+sampler = %s\n\
+\n\
+[pipeline]\n\
+fast_slow = T\n\
+values = %%(confDir)s/pars2/%%(runname)s_values.ini\n\
+priors = %%(confDir)s/pars2/%%(runname)s_priors.ini\n\
+\n\
+modules = %s\n\
+\n\
+extra_output = cosmological_parameters/S_8 data_vector/2pt_chi2 cosmological_parameters/sigma_8\n\
+quiet=T\n\
+debug=F\n\
+\n\
+[output]\n\
+filename = outputs/%s_%%(runname)s.txt\n\
+format=text\n\
+privacy = F\n\
+\n\
+%%include $cosmosis_utils/config/s19a/models/mc.ini\n\
+%%include $cosmosis_utils/config/s19a/models/cosmo.ini\n\
+%%include $cosmosis_utils/config/s19a/models/astro.ini\n\
+%%include $cosmosis_utils/config/s19a/models/sys.ini\n\
+%%include $cosmosis_utils/config/s19a/models/likelihood.ini\n\
+"
+    assert os.path.isdir("configs")
+    outfname = "configs/%s_%s_%s.ini" %(sampler, runname, datname)
+    if not os.path.isfile(outfname):
+        with open(outfname, "wt") as outfile:
+            outfile.write(
+                content %(
+                    runname, datname, sampler,
+                    modules.replace("2pt_like", "2pt_like_sim"),
+                    sampler,
+                    )
+                )
     else:
         logging.warn("Already has output ini file: %s" %outfname)
     return
