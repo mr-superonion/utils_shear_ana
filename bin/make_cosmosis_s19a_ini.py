@@ -21,14 +21,18 @@ def main(datname, sampler):
         setup_list = yaml.load(file, Loader=yaml.FullLoader)
 
     if is_data:
-        for ss in setup_list[0:4]:
+        for ss in setup_list[0:10]:
             for kk in ss.keys():
-                cosmosisutil.make_config_ini(kk, datname, sampler, **ss[kk])
+                cosmosisutil.make_config_ini(
+                        runname=kk, datname=datname,
+                        sampler=sampler, **ss[kk])
                 break
     else:
         ss = setup_list[0]
         for kk in ss.keys():
-            cosmosisutil.make_config_sim_ini(kk, datname, sampler, **ss[kk])
+            cosmosisutil.make_config_sim_ini(
+                    runname=kk, datname=datname,
+                    sampler=sampler, **ss[kk])
             break
     return
 

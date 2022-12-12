@@ -30,6 +30,7 @@ modules_default = "free_params_sig8    consistency  \n\
 def make_config_ini(
     runname="fid",
     datname="cat0",
+    fieldname="all",
     sampler="multinest",
     modules=None,
 ):
@@ -48,6 +49,7 @@ def make_config_ini(
 confDir=$cosmosis_utils/config/s19a/\n\
 runname=%s\n\
 datname=%s\n\
+fieldname=%s\n\
 \n\
 [runtime]\n\
 sampler = %s\n\
@@ -78,7 +80,7 @@ privacy = F\n\
     outfname = "configs/%s_%s_%s.ini" %(sampler, runname, datname)
     if not os.path.isfile(outfname):
         with open(outfname, "wt") as outfile:
-            outfile.write(content%(runname, datname, sampler, modules, sampler))
+            outfile.write(content%(runname, datname, fieldname, sampler, modules, sampler))
     else:
         logging.warn("Already has output ini file: %s" %outfname)
     return
@@ -105,6 +107,7 @@ def make_config_sim_ini(
 confDir=$cosmosis_utils/config/s19a/\n\
 runname=%s\n\
 datname=%s\n\
+fieldname=all\n\
 \n\
 [runtime]\n\
 sampler = %s\n\
