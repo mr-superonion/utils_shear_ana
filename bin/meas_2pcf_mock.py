@@ -17,15 +17,17 @@ corrs = np.array([1.17133725, 1.08968149, 1.06929737, 1.05591374])
 
 
 class Worker(object):
-    def __init__(self, fieldname):
+    def __init__(self, datname, fieldname):
         self.nz = 4
-        wrkDir = os.environ["homeWrk"]
+        self.blind_ver = datname
         self.fieldname = fieldname
+        wrkDir = os.environ["homeWrk"]
         self.cor_ver = "cor_fields"
-        self.blind_ver = "cat2"
         self.oDir = os.path.join(
             wrkDir, "cosmicShear/mocksim/%s_%s/" % (self.cor_ver, self.blind_ver)
         )
+        if not os.path.isdir(self.oDir):
+            os.makedirs(self.oDir, exist_ok=True)
         self.mockDir = os.path.join(wrkDir, "S19ACatalogs/catalog_mock/shape_v2/")
         self.msklist = []
         for i in range(self.nz):
@@ -36,6 +38,9 @@ class Worker(object):
                 self.msklist.append(fitsio.read(_)["field"] == fieldname)
             else:
                 self.msklist.append(fitsio.read(_)["field"] != "nan")
+                # self.msklist.append(~np.load("./msk_%d.npy" %i))
+        # for i in range(self.nz):
+        #     print(np.sum(~self.msklist[i]))
         self.mrTab = astTable.Table.read(
             os.path.join(os.environ["HOME"], "hsc_blinds/shear_biases_fiducial.csv")
         )
@@ -52,6 +57,7 @@ class Worker(object):
         )
         msk = (dd["noise1_int"] ** 2.0 + dd["noise2_int"] ** 2.0) < 10.0
         msk = msk & ((dd["noise1_mea"] ** 2.0 + dd["noise2_mea"] ** 2.0) < 10.0)
+        print(np.sum(~msk))
         dd = dd[msk]
         del msk
         cat = mea2pcf.convert_mock2treecat(
@@ -77,7 +83,6 @@ class Worker(object):
             )
             return
 
-        # multiplicative bias table
         for i in range(self.nz):
             znmi = os.path.join(
                 self.mockDir,
@@ -118,7 +123,10 @@ if __name__ == "__main__":
     parser.add_argument(
         "--maxId", required=True, type=int, help="maximum id number, e.g. 1404"
     )
-    parser.add_argument("--field", required=True, type=str, help="field name")
+    parser.add_argument("--field", required=True, type=str,
+                        help="field name, all, XMM, VVDS or GAMA09H etc.")
+    parser.add_argument("--datname", default="cat0", type=str,
+                        help="data name. cat0, cat1 or cat2")
     group = parser.add_mutually_exclusive_group()
     group.add_argument(
         "--ncores",
@@ -133,7 +141,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     pool = schwimmbad.choose_pool(mpi=args.mpi, processes=args.n_cores)
-    worker = Worker(args.field)
+    worker = Worker(args.datname, args.field)
     refs = list(range(args.minId, args.maxId))
     for r in pool.map(worker, refs):
         pass
