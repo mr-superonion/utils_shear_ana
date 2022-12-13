@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import os
+import time
 import argparse
 
 script="""
@@ -31,14 +32,14 @@ def submit_job(inifile, queue):
     jobname = inifile.split(".ini")[0].split("configs/")[-1]
     # assume to use maximum resource for each queue
     host = os.environ["HOSTNAME"][0:2]
-    if host=="id":
+    if host=="id": # idark
         nodes_ppn = {
                 "tiny":[1,1,1], "mini":[1,52,52],
                 "mini_B":[1,52,52], "small":[4,52,208],
                 "large":[20,52,1040]
                 }[queue]
         walltime = ""
-    elif host == "gw":
+    elif host == "gw": # gw
         nodes_ppn = {
                 "tiny":[1,1,1], "mini":[1,28,28],
                 "small":[4, 28, 112], "mini2":[1,504,504]
@@ -65,6 +66,7 @@ def submit_job(inifile, queue):
             )
 
     print(jobscript)
+    time.sleep(0.5)
 
     with open("script_temp.sh", "w") as f:
         f.write(jobscript)

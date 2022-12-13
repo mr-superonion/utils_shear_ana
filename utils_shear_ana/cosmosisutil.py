@@ -33,6 +33,8 @@ def make_config_ini(
     fieldname="all",
     sampler="multinest",
     modules=None,
+    valuename="fid",
+    priorname="fid",
 ):
     """Makes configuration ini file to analysis data
 
@@ -41,6 +43,8 @@ def make_config_ini(
         datname (str):      data version name [cat0, cat1 or simulations]
         sampler (str):      sampler name
         modules (str):      names of modules
+        valuename (str):    value file name
+        priorname (str):    prior file name
     """
     if modules is None:
         modules = modules_default
@@ -56,8 +60,8 @@ sampler = %s\n\
 \n\
 [pipeline]\n\
 fast_slow = T\n\
-values = %%(confDir)s/pars2/%%(runname)s_values.ini\n\
-priors = %%(confDir)s/pars2/%%(runname)s_priors.ini\n\
+values = %%(confDir)s/pars2/%s_values.ini\n\
+priors = %%(confDir)s/pars2/%s_priors.ini\n\
 \n\
 modules = %s\n\
 \n\
@@ -80,7 +84,13 @@ privacy = F\n\
     outfname = "configs/%s_%s_%s.ini" %(sampler, runname, datname)
     if not os.path.isfile(outfname):
         with open(outfname, "wt") as outfile:
-            outfile.write(content%(runname, datname, fieldname, sampler, modules, sampler))
+            outfile.write(
+                content%(
+                    runname, datname, fieldname,
+                    sampler, valuename, priorname,
+                    modules, sampler,
+                    )
+                )
     else:
         logging.warn("Already has output ini file: %s" %outfname)
     return
@@ -91,14 +101,18 @@ def make_config_sim_ini(
     datname="cowls85",
     sampler="multinest",
     modules=None,
+    valuename="fid",
+    priorname="fid",
 ):
     """Makes configuration ini file to analysis simulation
 
     Args:
-        runname (str):   chain name
+        runname (str):      chain name
         datname (str):      data version name [cat0, cat1 or simulations]
         sampler (str):      sampler name
         modules (str):      names of modules
+        valuename (str):    value file name
+        priorname (str):    prior file name
     """
     if modules is None:
         modules = modules_default
@@ -114,8 +128,8 @@ sampler = %s\n\
 \n\
 [pipeline]\n\
 fast_slow = T\n\
-values = %%(confDir)s/pars2/%%(runname)s_values.ini\n\
-priors = %%(confDir)s/pars2/%%(runname)s_priors.ini\n\
+values = %%(confDir)s/pars2/%s_values.ini\n\
+priors = %%(confDir)s/pars2/%s_priors.ini\n\
 \n\
 modules = %s\n\
 \n\
@@ -141,6 +155,7 @@ privacy = F\n\
             outfile.write(
                 content %(
                     runname, datname, sampler,
+                    valuename, priorname,
                     modules.replace("2pt_like", "2pt_like_sim"),
                     sampler,
                     )
