@@ -29,7 +29,7 @@ from .mea2pcf import Interp1d
 from matplotlib.ticker import Locator
 
 # some default setups
-kde0 = 1.1
+kde0 = 1.4
 stat0 = "max"
 
 
@@ -622,6 +622,7 @@ def plot_chain_corner(clist, cnlist, blind_by, nlist, truth=None, scale=2.5):
         raise ValueError("scale need to be greater than 1.05 and smaller than 10")
 
     npar = len(nlist)
+    nlistb = ["s_8", "omega_m", "sigma_8"]
     if blind_by is not None:
         assert (
             blind_by in cnlist
@@ -630,45 +631,46 @@ def plot_chain_corner(clist, cnlist, blind_by, nlist, truth=None, scale=2.5):
         c = ChainConsumer()
         oo = clist[cnlist.index(blind_by)]
         c.add_chain(
-            [oo[nlist[ii]] for ii in range(npar)],
+            [oo[ni] for ni in nlistb],
             weights=oo["weight"],
-            parameters=[chainutil.latexDict[nn] for nn in nlist],
+            parameters=[chainutil.latexDict[nn] for nn in nlistb],
             posterior=oo["post"],
             kde=kde0,
             statistics=stat0,
         )
         stat = c.analysis.get_summary()
         avel = np.array(
-                [stat[chainutil.latexDict[nlist[i]]][1] for i in range(npar)]
+                [stat[chainutil.latexDict[ni]][1] for ni in nlistb]
                 )
         del c, oo, stat
     else:
-        avel = np.array([0] * npar)
+        avel = np.array([0] * len(nlistb))
 
     c = ChainConsumer()
     for ii, oo in enumerate(clist):
         # blind sigma_8 and omega_m
         chain_name = cnlist[ii]
+        nlist2 = [nn for nn in nlist if nn in oo.dtype.names]
         ll = [
-            oo[nlist[ii]] - avel[ii]
-            for ii in range(npar)
-            if nlist[ii] in ["s_8", "omega_m", "sigma_8"]
+            oo[nn] - avel[nlistb.index(nn)]
+            for nn in nlist2
+            if nn in nlistb
         ]
         ll2 = [
-            oo[nlist[ii]]
-            for ii in range(npar)
-            if nlist[ii] not in ["s_8", "omega_m", "sigma_8"]
+            oo[nn]
+            for nn in nlist2
+            if nn not in nlistb
         ]
         c.add_chain(
             ll + ll2,
             weights=oo["weight"],
-            parameters=[chainutil.latexDict[nn] for nn in nlist],
+            parameters=[chainutil.latexDict[nn] for nn in nlist2],
             posterior=oo["post"],
             kde=kde0,
             name=chain_name,
             plot_point=False,
         )
-        del ll, ll2
+        del ll, ll2, nlist2
     c.configure(
         global_point=False,
         shade=False,
@@ -700,16 +702,26 @@ def get_summary_extents(stat, pnlist, clist, scale=1.):
     Returns:
         ext (list):         a list of tuples of extents for parameters
     """
+    ldt = chainutil.latexDict
     npar = len(pnlist)
     nchain = len(clist)
-    emin = [
-        [stat[j][chainutil.latexDict[pnlist[i]]][0] for i in range(npar)]
-        for j in range(nchain)
-    ]
-    emax = [
-        [stat[j][chainutil.latexDict[pnlist[i]]][-1] for i in range(npar)]
-        for j in range(nchain)
-    ]
+    emin = []
+    emax = []
+    for j in range(nchain):
+        min_tmp = []
+        max_tmp = []
+        stat_tmp = stat[j]
+        for i in range(npar):
+            pname = ldt[pnlist[i]]
+            if pname in stat_tmp.keys():
+                min_tmp.append(stat_tmp[pname][0])
+                max_tmp.append(stat_tmp[pname][-1])
+            else:
+                min_tmp.append(np.nan)
+                max_tmp.append(np.nan)
+        emin.append(min_tmp)
+        emax.append(max_tmp)
+
     emin = np.min(np.array(emin), axis=0)
     emax = np.max(np.array(emax), axis=0)
     ecen = (emin + emax) / 2.0
