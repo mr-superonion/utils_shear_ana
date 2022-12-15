@@ -59,6 +59,69 @@ chain_labels_dict = {
     "mizuki": r"\texttt{mizuki}",
 }
 
+latexDict = {
+    "omega_m": r"$\Omega_{\mathrm{m}}$",
+    "omega_b": r"$\Omega_{\mathrm{b}}$",
+    "ombh2": r"$\omega_{\mathrm{b}}$",
+    "sigma_8": r"$\sigma_8$",
+    "s_8": r"$S_8$",
+    "a_s": r"$A_s$",
+    "n_s": r"$n_s$",
+    "h0": r"$h_0$",
+    "a": r"$A^{\mathrm{IA}}_1$",
+    "a1": r"$A^{\mathrm{IA}}_1$",
+    "a2": r"$A^{\mathrm{IA}}_2$",
+    "alpha": r"$\eta^{\mathrm{IA}}_1$",
+    "alpha1": r"$\eta^{\mathrm{IA}}_1$",
+    "alpha2": r"$\eta^{\mathrm{IA}}_2$",
+    "bias_ta": r"$b^{\mathrm{TA}}$",
+    "alpha_psf": r"$\alpha^{\mathrm{psf}}$",
+    "beta_psf": r"$\beta^{\mathrm{psf}}$",
+    "psf_cor1_z1": r"$\alpha^{(2)}_1$",
+    "psf_cor2_z1": r"$\beta^{(2)}_1$",
+    "psf_cor3_z1": r"$\alpha^{(4)}_1$",
+    "psf_cor4_z1": r"$\beta^{(4)}_1$",
+    "psf_cor1_z2": r"$\alpha^{(2)}_2$",
+    "psf_cor2_z2": r"$\beta^{(2)}_2$",
+    "psf_cor3_z2": r"$\alpha^{(4)}_2$",
+    "psf_cor4_z2": r"$\beta^{(4)}_2$",
+    "psf_cor1_z3": r"$\alpha^{(2)}_3$",
+    "psf_cor2_z3": r"$\beta^{(2)}_3$",
+    "psf_cor3_z3": r"$\alpha^{(4)}_3$",
+    "psf_cor4_z3": r"$\beta^{(4)}_3$",
+    "psf_cor1_z4": r"$\alpha^{(2)}_4$",
+    "psf_cor2_z4": r"$\beta^{(2)}_4$",
+    "psf_cor3_z4": r"$\alpha^{(4)}_4$",
+    "psf_cor4_z4": r"$\beta^{(4)}_4$",
+    "bias_1": r"$\Delta{z}_1$",
+    "bias_2": r"$\Delta{z}_2$",
+    "bias_3": r"$\Delta{z}_3$",
+    "bias_4": r"$\Delta{z}_4$",
+    "m1": r"$\Delta{m}_1$",
+    "m2": r"$\Delta{m}_2$",
+    "m3": r"$\Delta{m}_3$",
+    "m4": r"$\Delta{m}_4$",
+    "logt_agn": r"$\Theta_{\mathrm{AGN}}$",
+    "a_bary": r"$A_{\mathrm{bary}}$",
+}
+
+rangeDict = {
+    "ombh2": [0.02, 0.025],
+    "n_s": [0.87, 1.07],
+    "h0": [0.62, 0.80],
+    "a": [-5, 5],
+    "a_bary": [2.0, 3.13],
+    "logt_agn": [7.2, 8.3],
+    "a1": [-5., 5.],
+    "a2": [-5., 5.],
+    "alpha": [-5., 5.],
+    "alpha1": [-5., 5.],
+    "alpha2": [-5., 5.],
+    "bias_3": [-0.5, 0.5],
+    "bias_4": [-0.5, 0.5],
+}
+
+
 
 class MinorSymLogLocator(Locator):
     """
@@ -633,14 +696,14 @@ def plot_chain_corner(clist, cnlist, blind_by, nlist, truth=None, scale=2.5):
         c.add_chain(
             [oo[ni] for ni in nlistb],
             weights=oo["weight"],
-            parameters=[chainutil.latexDict[nn] for nn in nlistb],
+            parameters=[latexDict[nn] for nn in nlistb],
             posterior=oo["post"],
             kde=kde0,
             statistics=stat0,
         )
         stat = c.analysis.get_summary()
         avel = np.array(
-                [stat[chainutil.latexDict[ni]][1] for ni in nlistb]
+                [stat[latexDict[ni]][1] for ni in nlistb]
                 )
         del c, oo, stat
     else:
@@ -664,7 +727,7 @@ def plot_chain_corner(clist, cnlist, blind_by, nlist, truth=None, scale=2.5):
         c.add_chain(
             ll + ll2,
             weights=oo["weight"],
-            parameters=[chainutil.latexDict[nn] for nn in nlist2],
+            parameters=[latexDict[nn] for nn in nlist2],
             posterior=oo["post"],
             kde=kde0,
             name=chain_name,
@@ -702,7 +765,7 @@ def get_summary_extents(stat, pnlist, clist, scale=1.):
     Returns:
         ext (list):         a list of tuples of extents for parameters
     """
-    ldt = chainutil.latexDict
+    ldt = latexDict
     npar = len(pnlist)
     nchain = len(clist)
     emin = []
@@ -729,9 +792,9 @@ def get_summary_extents(stat, pnlist, clist, scale=1.):
     exts = [[ecen[i] - edd[i]*scale, ecen[i] + edd[i]*scale] for i in range(npar)]
     for ie,ee in enumerate(exts):
         nn = pnlist[ie]
-        if nn in chainutil.rangeDict.keys():
-            ee[0] = max(chainutil.rangeDict[nn][0],ee[0])
-            ee[1] = min(chainutil.rangeDict[nn][1],ee[1])
+        if nn in rangeDict.keys():
+            ee[0] = max(rangeDict[nn][0],ee[0])
+            ee[1] = min(rangeDict[nn][1],ee[1])
     return exts
 
 
@@ -748,7 +811,7 @@ def get_summary_lims(stat, pnlist, clist):
     npar = len(pnlist)
     nchain = len(clist)
     parlims = [
-        [stat[j][chainutil.latexDict[pnlist[i]]] for i in range(npar)]
+        [stat[j][latexDict[pnlist[i]]] for i in range(npar)]
         for j in range(nchain)
     ]
     return parlims
@@ -782,13 +845,13 @@ def plot_chain_summary(
         c.add_chain(
             [oo[pnlist[ii]] for ii in range(npar)],
             weights=oo["weight"],
-            parameters=[chainutil.latexDict[nn] for nn in pnlist],
+            parameters=[latexDict[nn] for nn in pnlist],
             posterior=oo["post"],
             kde=kde0,
             statistics=stat0,
         )
         stat = c.analysis.get_summary()
-        avel = [stat[chainutil.latexDict[pnlist[i]]][1] for i in range(npar)]
+        avel = [stat[latexDict[pnlist[i]]][1] for i in range(npar)]
         del c, oo, stat
     else:
         avel = [0] * npar
@@ -798,7 +861,7 @@ def plot_chain_summary(
         c.add_chain(
             [oo[pnlist[ii]] - avel[ii] for ii in range(npar)],
             weights=oo["weight"],
-            parameters=[chainutil.latexDict[nn] for nn in pnlist],
+            parameters=[latexDict[nn] for nn in pnlist],
             posterior=oo["post"],
             kde=kde0,
         )
@@ -846,7 +909,7 @@ def plot_chain_summary(
                 )
             if h == 0:
                 axes[j].axvspan(lower0, upper0, color="gray", alpha=0.2)
-                axes[j].set_title(chainutil.latexDict[pnlist[j]], fontsize=20)
+                axes[j].set_title(latexDict[pnlist[j]], fontsize=20)
                 axes[j].set_xlim(extent[j])
     plt.ylim(-0.5, nchain-0.5)
     plt.yticks(range(nchain), cnlist)
