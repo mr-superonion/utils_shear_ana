@@ -35,6 +35,7 @@ def make_config_ini(
     modules=None,
     valuename="fid",
     priorname="fid",
+    **kargs,
 ):
     """Makes configuration ini file to analysis data
 
@@ -70,7 +71,7 @@ quiet=T\n\
 debug=F\n\
 \n\
 [output]\n\
-filename = outputs/%s_%%(runname)s.txt\n\
+filename = outputs/%s_%%(runname)s_%%(datname)s.txt\n\
 format=text\n\
 privacy = F\n\
 \n\
@@ -103,6 +104,7 @@ def make_config_sim_ini(
     modules=None,
     valuename="fid",
     priorname="fid",
+    **kargs,
 ):
     """Makes configuration ini file to analysis simulation
 
@@ -138,7 +140,7 @@ quiet=T\n\
 debug=F\n\
 \n\
 [output]\n\
-filename = outputs/%s_%%(runname)s.txt\n\
+filename = outputs/%s_%%(runname)s_%%(datname)s.txt\n\
 format=text\n\
 privacy = F\n\
 \n\

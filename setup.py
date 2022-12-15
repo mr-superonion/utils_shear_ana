@@ -13,7 +13,7 @@ with open(fname, "r") as ff:
 
 scripts = [
         "bin/make_mock_datav.py",
-        "bin/make_cosmosis_s19a_ini.py",
+        "bin/make_cosmosis_ini.py",
         "bin/submit_shear_job.py",
         "bin/shear_config",
         ]

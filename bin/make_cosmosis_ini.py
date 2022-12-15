@@ -7,10 +7,15 @@ from argparse import ArgumentParser
 from utils_shear_ana import cosmosisutil
 
 
-def main(datname, sampler, inds):
+def main(datname, sampler, inds, num):
     is_data =  datname in ["cat0", "cat1", "cat2"]
+    if num >= 0:
+        assert datname == "ran", "does not support noisy mocks run current datname, \
+                please set '--datname ran'"
+        datname = "%s%d" %(datname, num)
     if not is_data:
-        assert os.path.isfile("sim/%s.fits" %datname), "cannot find data for simulations! "
+        assert os.path.isfile("sim/%s.fits" %datname), \
+            "cannot find file %s.fits! please put simulation under ./sim/" %datname
     # os.system("cp $shear_utils/bin/shear_config ./")
     os.makedirs("checkpoints", exist_ok=True)
     os.makedirs("clusters/checkpoints", exist_ok=True)
@@ -56,6 +61,15 @@ if __name__ == "__main__":
         "-i", "--inds", default=-1, type=int, nargs='+',
         help="runname index"
     )
+    parser.add_argument(
+        "-n", "--num",
+        type=int, default=0,
+        help="number of simlations"
+    )
     args = parser.parse_args()
     inds = np.int_(np.atleast_1d(args.inds))
-    main(args.datname, args.sampler, inds)
+    if args.num > 0:
+        for i in range(args.num):
+            main(args.datname, args.sampler, inds, i)
+    else:
+        main(args.datname, args.sampler, inds, -1)
