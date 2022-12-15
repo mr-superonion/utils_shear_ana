@@ -50,48 +50,6 @@ corB360 = treecorr.GGCorrelation(
     nbins=360, min_sep=0.21, max_sep=420.0, sep_units="arcmin"
 )
 
-
-class Interp1d(object):
-    def __init__(self, angle, spec, bounds_error=False):
-        if np.all(spec > 0):
-            self.interp_func = interp1d(
-                np.log(angle),
-                np.log(spec),
-                bounds_error=bounds_error,
-                fill_value=-np.inf,
-            )
-            self.interp_type = "loglog"
-            self.x_func = np.log
-            self.y_func = np.exp
-        elif np.all(spec < 0):
-            self.interp_func = interp1d(
-                np.log(angle),
-                np.log(-spec),
-                bounds_error=bounds_error,
-                fill_value=-np.inf,
-            )
-            self.interp_type = "minus_loglog"
-            self.x_func = np.log
-            self.y_func = lambda y: -np.exp(y)
-        else:
-            self.interp_func = interp1d(
-                np.log(angle), spec, bounds_error=bounds_error, fill_value=0.0
-            )
-            self.interp_type = "log_ang"
-            self.x_func = np.log
-            self.y_func = lambda y: y
-
-    def __call__(self, angle):
-        interp_vals = self.x_func(angle)
-        try:
-            spec = self.y_func(self.interp_func(interp_vals))
-        except ValueError:
-            interp_vals[0] *= 1 + 1.0e-9
-            interp_vals[-1] *= 1 - 1.0e-9
-            spec = self.y_func(self.interp_func(interp_vals))
-        return spec
-
-
 class EBmode:
     def __init__(self, Dir, nzs=4, tmin=0.3, tmax=400.0):
         """Class to do EB mode separation based on equations (25) and (26) in

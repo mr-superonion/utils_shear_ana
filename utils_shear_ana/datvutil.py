@@ -21,6 +21,7 @@ import numpy as np
 import logging
 
 import astropy.io.fits as pyfits
+from scipy.interpolate import interp1d
 
 # Some useful functions for cosmosis
 
@@ -49,6 +50,48 @@ nzallDF = (nzsDF + 1) * nzsDF // 2
 # xim[z1,z2,theta1].. xim[z1,z1,thetaN] ..
 # ......
 # xim[zN,zN,theta1].. xim[z1,z1,thetaN] ..
+
+class Interp1d(object):
+    def __init__(self, angle, spec, bounds_error=False):
+        if np.all(spec > 0):
+            self.interp_func = interp1d(
+                np.log(angle),
+                np.log(spec),
+                bounds_error=bounds_error,
+                fill_value=-np.inf,
+            )
+            self.interp_type = "loglog"
+            self.x_func = np.log
+            self.y_func = np.exp
+        elif np.all(spec < 0):
+            self.interp_func = interp1d(
+                np.log(angle),
+                np.log(-spec),
+                bounds_error=bounds_error,
+                fill_value=-np.inf,
+            )
+            self.interp_type = "minus_loglog"
+            self.x_func = np.log
+            self.y_func = lambda y: -np.exp(y)
+        else:
+            self.interp_func = interp1d(
+                np.log(angle), spec, bounds_error=bounds_error, fill_value=0.0
+            )
+            self.interp_type = "log_ang"
+            self.x_func = np.log
+            self.y_func = lambda y: y
+
+    def __call__(self, angle):
+        interp_vals = self.x_func(angle)
+        try:
+            spec = self.y_func(self.interp_func(interp_vals))
+        except ValueError:
+            interp_vals[0] *= 1 + 1.0e-9
+            interp_vals[-1] *= 1 - 1.0e-9
+            spec = self.y_func(self.interp_func(interp_vals))
+        return spec
+
+
 
 
 def make_empty_sep_mask(nzs, ntheta):

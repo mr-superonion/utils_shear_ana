@@ -24,7 +24,7 @@ from matplotlib.colors import SymLogNorm
 from chainconsumer import ChainConsumer
 
 from . import chainutil
-from .mea2pcf import Interp1d
+from .datvutil import Interp1d
 
 from matplotlib.ticker import Locator
 
@@ -353,7 +353,7 @@ def make_tpcf_plot(title="xi", nzs=4):
         title (str):    title of the figure ['xi', 'thetaxi', 'thetaEB', 'ratio', 'ratio2']
     """
     axes = {}
-    fig = plt.figure(figsize=((nzs + 1) * 2, (nzs + 1) * 2))
+    fig = plt.figure(figsize=((nzs + 1) * 3, (nzs + 1) * 2))
     plt.subplots_adjust(wspace=0, hspace=0)
 
     if title == "xi":
