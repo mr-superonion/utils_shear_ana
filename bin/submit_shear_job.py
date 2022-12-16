@@ -89,4 +89,8 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     for ff in args.inifile:
+        if "minuit" in ff:
+            assert args.queue == "tiny"
+        if "maxlike" in ff:
+            assert args.queue == "tiny"
         submit_job(ff, args.queue)

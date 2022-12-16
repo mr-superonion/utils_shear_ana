@@ -29,7 +29,7 @@ from .datvutil import Interp1d
 from matplotlib.ticker import Locator
 
 # some default setups
-kde0 = 1.4
+kde0 = 1.1
 stat0 = "max"
 
 
@@ -109,9 +109,9 @@ rangeDict = {
     "ombh2": [0.02, 0.025],
     "n_s": [0.87, 1.07],
     "h0": [0.62, 0.80],
-    "a": [-5, 5],
     "a_bary": [2.0, 3.13],
     "logt_agn": [7.2, 8.3],
+    "a": [-5, 5],
     "a1": [-5., 5.],
     "a2": [-5., 5.],
     "alpha": [-5., 5.],
@@ -119,6 +119,7 @@ rangeDict = {
     "alpha2": [-5., 5.],
     "bias_3": [-0.5, 0.5],
     "bias_4": [-0.5, 0.5],
+    "bias_ta": [0, 2.],
 }
 
 
@@ -743,14 +744,17 @@ def plot_chain_corner(clist, cnlist, blind_by, nlist, truth=None, scale=2.5):
         label_font_size=14,
         linewidths=1.5,
         spacing=0.,
-        max_ticks=4,
+        max_ticks=3,
         sigmas = sigmas,
         summary=True,
         legend_kwargs={"loc": "lower right", "fontsize": 20},
     )
     stat = np.atleast_1d(c.analysis.get_summary())
     print(stat)
-    exts = get_summary_extents(stat, nlist, clist, scale=scale)
+    lnlist = [latexDict[nn] for nn in nlist]
+    idx = np.sort(np.unique(lnlist, return_index=True)[1])
+    nlist2 = [nlist[ii] for ii in idx]
+    exts = get_summary_extents(stat, nlist2, clist, scale=scale)
     fig = c.plotter.plot(figsize=1.5, extents=exts, truth=truth)
     return fig
 
@@ -785,8 +789,8 @@ def get_summary_extents(stat, pnlist, clist, scale=1.):
         emin.append(min_tmp)
         emax.append(max_tmp)
 
-    emin = np.min(np.array(emin), axis=0)
-    emax = np.max(np.array(emax), axis=0)
+    emin = np.nanmin(np.array(emin), axis=0)
+    emax = np.nanmax(np.array(emax), axis=0)
     ecen = (emin + emax) / 2.0
     edd = np.max(np.stack([np.abs(emin - ecen), np.abs(emax - ecen)]), axis=0) * 1.32
     exts = [[ecen[i] - edd[i]*scale, ecen[i] + edd[i]*scale] for i in range(npar)]

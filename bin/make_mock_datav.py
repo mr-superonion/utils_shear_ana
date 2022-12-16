@@ -21,6 +21,8 @@ def make_model_mock(Dir, blind=0, num=0):
         cdir (str):     Cosmosis output directory
         num (int):      number of simulations (if 0 make only noiseless one)
     """
+    Dir = Dir.replace("./", "")
+    assert "/" not in Dir, "do not support sub directory"
 
     blind_ver= "cat%d" %blind
 
@@ -57,7 +59,7 @@ def make_model_mock(Dir, blind=0, num=0):
 
         # write output
         for i in range(num):
-            ofname=  os.path.join(odir, "ran%d.fits" %i)
+            ofname=  os.path.join(odir, "%s_ran%02d.fits" %(Dir,i))
             out2 = out.copy()
             out2[2].data['value']=mockAll[i,:nxp]
             out2[3].data['value']=mockAll[i,nxp:]

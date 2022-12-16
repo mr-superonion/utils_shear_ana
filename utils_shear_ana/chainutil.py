@@ -113,7 +113,7 @@ def read_cosmosis_max(infname):
     data = data[0]
     colnames = [c.lower().split("--")[-1] for c in colnames]
     nsample, npar = data.shape
-    types = [tp for tp in zip(colnames, [">f8"] * npar)]
+    types = list(set([tp for tp in zip(colnames, [">f8"] * npar)]))
     cal_s8 = False
     if ("s_8" not in colnames) and ("omega_m" in colnames) and ("sigma_8" in colnames):
         types.append(("s_8", ">f8"))
@@ -147,8 +147,9 @@ def estimate_parameters_from_chain(infname, ptype="map", do_write=True):
     names = list(chain.dtype.names)
 
     # remove those derived parameters
-    for nn in ["prior", "like", "post", "weight"]:
-        names.remove(nn)
+    if ptype != "map":
+        for nn in ["prior", "like", "post", "weight"]:
+            names.remove(nn)
 
     c = ChainConsumer()
     c.add_chain(
