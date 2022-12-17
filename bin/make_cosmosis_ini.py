@@ -6,6 +6,11 @@ import numpy as np
 from argparse import ArgumentParser
 from utils_shear_ana import cosmosisutil
 
+setups_fname = os.path.join(os.environ["cosmosis_utils"], "config/s19a", "setups.yaml")
+with open(setups_fname) as file:
+    setup_list = yaml.load(file, Loader=yaml.FullLoader)
+setup_names = [list(ss.keys())[0] for ss in setup_list]
+
 
 def main(datname, sampler, inds, num):
     is_data =  datname in ["cat0", "cat1", "cat2"]
@@ -20,14 +25,8 @@ def main(datname, sampler, inds, num):
     os.makedirs("outputs", exist_ok=True)
     os.makedirs("stdout", exist_ok=True)
     os.makedirs("configs", exist_ok=True)
-    setups_fname = os.path.join(os.environ["cosmosis_utils"], "config/s19a", "setups.yaml")
-    with open(setups_fname) as file:
-        setup_list = yaml.load(file, Loader=yaml.FullLoader)
 
-    if not np.all(inds>=0):
-        ll = setup_list[0:1]
-    else:
-        ll = [setup_list[i] for i in inds]
+    ll = [setup_list[i] for i in inds]
 
     if is_data:
         func = cosmosisutil.make_config_ini
@@ -56,7 +55,7 @@ if __name__ == "__main__":
         help="sampler: multinest, minuit, multinest_final"
     )
     parser.add_argument(
-        "-i", "--inds", default=-1, type=int, nargs='+',
+        "-r", "--runname", default="fid", type=str, nargs='+',
         help="runname index"
     )
     parser.add_argument(
@@ -65,7 +64,9 @@ if __name__ == "__main__":
         help="number of simlations"
     )
     args = parser.parse_args()
-    inds = np.int_(np.atleast_1d(args.inds))
+    rnames = np.atleast_1d(args.runname)
+    assert set(rnames) <= set(setup_names), "the input runname is not a subset of setup list"
+    inds = np.unique(np.array([ setup_names.index(rn) for rn in rnames ]))
     if args.num > 0:
         for i in range(args.num):
             main(args.datname, args.sampler, inds, i)
