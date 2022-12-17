@@ -21,24 +21,24 @@ then
     return
 fi
 
-echo "running on $server_name"
-case "$server_name" in
-	"gw")   source /work/xiangchong.li/setupCosmosisMpich2.sh &&
+echo "running on $HOSTNAME"
+case "$HOSTNAME" in
+	"gw1.local")   source /work/xiangchong.li/setupCosmosisMpich2.sh &&
             export "cosmosis_utils=/work/xiangchong.li/superonionGW/code/hsc/utils_cosmosis" &&
             export "shear_utils=/work/xiangchong.li/superonionGW/code/hsc/utils_shear_ana" &&
             export "rootDir=/work/xiangchong.li/work/cosmicShear/";;
             # for gw
-	"gf")   source /work/xiangchong.li/setupCosmosisMpich2.sh &&
-            export "cosmosis_utils=/work/xiangchong.li/superonionGW/code/hsc/utils_cosmosis" &&
-            export "shear_utils=/work/xiangchong.li/superonionGW/code/hsc/utils_shear_ana" &&
-            export "rootDir=/work/xiangchong.li/work/cosmicShear/";;
+	"fe")   source /gpfs02/work/xiangchong.li/ana/setupCosmosis2.sh &&
+            export "cosmosis_utils=/work/xiangchong.li/code/hsc/utils_cosmosis" &&
+            export "shear_utils=/work/xiangchong.li/code/hsc/utils_shear_ana" &&
+            export "rootDir=/work/xiangchong.li/code/hsc/utils_cosmosis";;
             # for gfarm
-	"id")   source /work/xiangchong.li/setupCosmosisMpich2.sh &&
-            export "cosmosis_utils=/work/xiangchong.li/superonionGW/code/hsc/utils_cosmosis" &&
-            export "shear_utils=/work/xiangchong.li/superonionGW/code/hsc/utils_shear_ana" &&
-            export "rootDir=/work/xiangchong.li/work/cosmicShear/";;
+	"idark")   source /lustre/work/xiangchong.li/ana/setupCosmosis2.zsh &&
+            export "cosmosis_utils=/lustre/work/xiangchong.li/superonionIDark/code/hsc/utils_cosmosis" &&
+            export "shear_utils=/lustre/work/xiangchong.li/superonionIDark/code/hsc/utils_shear_ana" &&
+            export "rootDir=/lustre/work/xiangchong.li/work/cosmicShear";;
             # for idark
-	"ve")   source /work/xiangchong.li/setupCosmosisMpich2.sh &&
+	"m005.opa.vera.psc.edu")   source /work/xiangchong.li/setupCosmosisMpich2.sh &&
             export "cosmosis_utils=/work/xiangchong.li/superonionGW/code/hsc/utils_cosmosis" &&
             export "shear_utils=/work/xiangchong.li/superonionGW/code/hsc/utils_shear_ana" &&
             export "rootDir=/work/xiangchong.li/work/cosmicShear/";;
