@@ -31,17 +31,17 @@ case "$HOSTNAME" in
 	"fe")   source /gpfs02/work/xiangchong.li/ana/setupCosmosis2.sh &&
             export "cosmosis_utils=/work/xiangchong.li/code/hsc/utils_cosmosis" &&
             export "shear_utils=/work/xiangchong.li/code/hsc/utils_shear_ana" &&
-            export "rootDir=/work/xiangchong.li/code/hsc/utils_cosmosis";;
+            export "rootDir=/gpfs02/work/xiangchong.li/work/cosmicShear";;
             # for gfarm
 	"idark")   source /lustre/work/xiangchong.li/ana/setupCosmosis2.zsh &&
             export "cosmosis_utils=/lustre/work/xiangchong.li/superonionIDark/code/hsc/utils_cosmosis" &&
             export "shear_utils=/lustre/work/xiangchong.li/superonionIDark/code/hsc/utils_shear_ana" &&
             export "rootDir=/lustre/work/xiangchong.li/work/cosmicShear";;
             # for idark
-	"m005.opa.vera.psc.edu")   source /work/xiangchong.li/setupCosmosisMpich2.sh &&
-            export "cosmosis_utils=/work/xiangchong.li/superonionGW/code/hsc/utils_cosmosis" &&
-            export "shear_utils=/work/xiangchong.li/superonionGW/code/hsc/utils_shear_ana" &&
-            export "rootDir=/work/xiangchong.li/work/cosmicShear/";;
+	"m005.opa.vera.psc.edu")   source /hildafs/projects/phy200017p/share/ana/setupCosmosis2 &&
+            export "cosmosis_utils=/hildafs/home/xiangchl/superonionVera/code/hsc/utils_cosmosis" &&
+            export "shear_utils=/hildafs/home/xiangchl/superonionVera/code/hsc/utils_shear_ana" &&
+            export "rootDir=/hildafs/projects/phy200017p/xiangchl/work/cosmicShear";;
             # for vera
 	*) echo "we do not support the server $HOSTNAME";;
 esac
