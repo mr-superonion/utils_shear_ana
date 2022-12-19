@@ -13,26 +13,31 @@ setup_names = [list(ss.keys())[0] for ss in setup_list]
 
 
 def main(datname, sampler, inds, num):
-    is_data =  datname in ["cat0", "cat1", "cat2"]
-    if num >= 0:
-        datname = "%s_ran%02d" %(datname, num)
-    if not is_data:
-        assert os.path.isfile("sim/%s.fits" %datname), \
-            "cannot find file %s.fits! please put simulation under ./sim/" %datname
     # os.system("cp $shear_utils/bin/shear_config ./")
+    # necessary directory to run cosmosis
     os.makedirs("checkpoints", exist_ok=True)
     os.makedirs("clusters/checkpoints", exist_ok=True)
     os.makedirs("outputs", exist_ok=True)
     os.makedirs("stdout", exist_ok=True)
     os.makedirs("configs", exist_ok=True)
 
-    ll = [setup_list[i] for i in inds]
-
+    # data or simulation
+    is_data =  datname in ["cat0", "cat1", "cat2"]
+    if not is_data:
+        assert os.path.isfile("sim/%s.fits" %datname), \
+            "cannot find file %s.fits! please put simulation under ./sim/" %datname
     if is_data:
         func = cosmosisutil.make_config_ini
+        if num >= 0:
+            raise ValueError("num should less than 0 to run on real data")
     else:
         func = cosmosisutil.make_config_sim_ini
+        # number of simulations
+        if num >= 0:
+            datname = "%s_ran%02d" %(datname, num)
 
+    # get init file for every setup
+    ll = [setup_list[i] for i in inds]
     for ss in ll:
         for kk in ss.keys():
             print("Writing config file for runname: %s" %kk)
@@ -51,7 +56,7 @@ if __name__ == "__main__":
         help="data name cat0, cat1, cat2 or cowls85"
     )
     parser.add_argument(
-        "-s", "--sampler", default="multinest", type=str,
+        "-s", "--sampler", default="multinest", type=str, nargs='+',
         help="sampler: multinest, minuit, multinest_final"
     )
     parser.add_argument(
@@ -64,11 +69,23 @@ if __name__ == "__main__":
         help="number of simlations"
     )
     args = parser.parse_args()
+
+    # prepare runnames
     rnames = np.atleast_1d(args.runname)
     assert set(rnames) <= set(setup_names), "the input runname is not a subset of setup list"
     inds = np.unique(np.array([ setup_names.index(rn) for rn in rnames ]))
+
+    # prepare simulation list
     if args.num > 0:
-        for i in range(args.num):
-            main(args.datname, args.sampler, inds, i)
+        nlist = np.arange(args.num, dtype=int)
     else:
-        main(args.datname, args.sampler, inds, -1)
+        # this is for real data
+        nlist = np.array([-1])
+
+    # prepare samplers
+    samp_list = np.atleast_1d(args.sampler)
+    for samp in samp_list:
+        # iterate over samplers
+        for i in nlist:
+            # iterate over id of simulations
+            main(args.datname, samp, inds, i)
