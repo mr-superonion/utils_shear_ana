@@ -32,6 +32,7 @@ def make_config_ini(
     datname="cat0",
     fieldname="all",
     sampler="multinest",
+    sid = 1,
     modules=None,
     valuename="fid",
     priorname="fid",
@@ -61,8 +62,8 @@ sampler = %s\n\
 \n\
 [pipeline]\n\
 fast_slow = T\n\
-values = %%(confDir)s/pars2/%s_values.ini\n\
-priors = %%(confDir)s/pars2/%s_priors.ini\n\
+values = %%(confDir)s/pars/%s_values.ini\n\
+priors = %%(confDir)s/pars/%s_priors.ini\n\
 \n\
 modules = %s\n\
 \n\
@@ -75,7 +76,7 @@ filename = outputs/%s_%%(runname)s_%%(datname)s.txt\n\
 format=text\n\
 privacy = F\n\
 \n\
-%%include $cosmosis_utils/config/s19a/models/mc.ini\n\
+%%include $cosmosis_utils/config/s19a/models/mc_%d.ini\n\
 %%include $cosmosis_utils/config/s19a/models/cosmo.ini\n\
 %%include $cosmosis_utils/config/s19a/models/astro.ini\n\
 %%include $cosmosis_utils/config/s19a/models/sys.ini\n\
@@ -84,12 +85,16 @@ privacy = F\n\
     assert os.path.isdir("configs")
     outfname = "configs/%s_%s_%s.ini" %(sampler, runname, datname)
     if not os.path.isfile(outfname):
+        if sampler[-1] in ['2', '3', '4']:
+            sampler0 = sampler[:-1]
+        else:
+            sampler0 = sampler
         with open(outfname, "wt") as outfile:
             outfile.write(
                 content%(
                     runname, datname, fieldname,
-                    sampler, valuename, priorname,
-                    modules, sampler,
+                    sampler0, valuename, priorname,
+                    modules, sampler, sid,
                     )
                 )
     else:
@@ -101,6 +106,7 @@ def make_config_sim_ini(
     runname="fid",
     datname="cowls85",
     sampler="multinest",
+    sid=1,
     modules=None,
     valuename="fid",
     priorname="fid",
@@ -144,7 +150,7 @@ filename = outputs/%s_%%(runname)s_%%(datname)s.txt\n\
 format=text\n\
 privacy = F\n\
 \n\
-%%include $cosmosis_utils/config/s19a/models/mc.ini\n\
+%%include $cosmosis_utils/config/s19a/models/mc_%d.ini\n\
 %%include $cosmosis_utils/config/s19a/models/cosmo.ini\n\
 %%include $cosmosis_utils/config/s19a/models/astro.ini\n\
 %%include $cosmosis_utils/config/s19a/models/sys.ini\n\
@@ -153,13 +159,17 @@ privacy = F\n\
     assert os.path.isdir("configs")
     outfname = "configs/%s_%s_%s.ini" %(sampler, runname, datname)
     if not os.path.isfile(outfname):
+        if sampler[-1] in ['2', '3', '4']:
+            sampler0 = sampler[:-1]
+        else:
+            sampler0 = sampler
         with open(outfname, "wt") as outfile:
             outfile.write(
                 content %(
-                    runname, datname, sampler,
+                    runname, datname, sampler0,
                     valuename, priorname,
                     modules.replace("2pt_like", "2pt_like_sim"),
-                    sampler,
+                    sampler, sid,
                     )
                 )
     else:

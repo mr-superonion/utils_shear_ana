@@ -12,7 +12,7 @@ with open(setups_fname) as file:
 setup_names = [list(ss.keys())[0] for ss in setup_list]
 
 
-def main(datname, sampler, inds, num):
+def main(datname, sampler, sid, inds, num):
     # os.system("cp $shear_utils/bin/shear_config ./")
     # necessary directory to run cosmosis
     os.makedirs("checkpoints", exist_ok=True)
@@ -43,7 +43,7 @@ def main(datname, sampler, inds, num):
             print("Writing config file for runname: %s" %kk)
             func(
                 runname=kk, datname=datname,
-                sampler=sampler, **ss[kk],
+                sampler=sampler, sid=sid, **ss[kk],
                 )
             break
     return
@@ -86,6 +86,10 @@ if __name__ == "__main__":
     samp_list = np.atleast_1d(args.sampler)
     for samp in samp_list:
         # iterate over samplers
+        if samp[-1] in ['2', '3', '4']:
+            sid =  eval(samp[-1])
+        else:
+            sid = 1
         for i in nlist:
             # iterate over id of simulations
-            main(args.datname, samp, inds, i)
+            main(args.datname, samp, sid, inds, i)

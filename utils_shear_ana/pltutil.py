@@ -29,7 +29,7 @@ from .datvutil import Interp1d
 from matplotlib.ticker import Locator
 
 # some default setups
-kde0 = 1.1
+kde0 = 1.4
 stat0 = "max"
 
 
