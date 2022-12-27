@@ -23,9 +23,6 @@ def main(datname, sampler, sid, inds, num):
 
     # data or simulation
     is_data =  datname in ["cat0", "cat1", "cat2"]
-    if not is_data:
-        assert os.path.isfile("sim/%s.fits" %datname), \
-            "cannot find file %s.fits! please put simulation under ./sim/" %datname
     if is_data:
         func = cosmosisutil.make_config_ini
         if num >= 0:
@@ -35,6 +32,9 @@ def main(datname, sampler, sid, inds, num):
         # number of simulations
         if num >= 0:
             datname = "%s_ran%02d" %(datname, num)
+    if not is_data:
+        assert os.path.isfile("sim/%s.fits" %datname), \
+            "cannot find file %s.fits! please put simulation under ./sim/" %datname
 
     # get init file for every setup
     ll = [setup_list[i] for i in inds]
@@ -72,7 +72,8 @@ if __name__ == "__main__":
 
     # prepare runnames
     rnames = np.atleast_1d(args.runname)
-    assert set(rnames) <= set(setup_names), "the input runname is not a subset of setup list"
+    if not set(rnames) <= set(setup_names):
+        print("%s is not in setup list" %set(rnames))
     inds = np.unique(np.array([ setup_names.index(rn) for rn in rnames ]))
 
     # prepare simulation list
