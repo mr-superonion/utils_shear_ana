@@ -11,11 +11,15 @@ import numpy as np
 
 
 class Worker(object):
-    def __init__(self, datname, fieldname):
+    def __init__(self, datname, fieldname, do_finer):
         self.nz = 4
         wrkDir = os.environ["homeWrk"]
         self.fieldname = fieldname
-        self.cor_ver = "cor_fields"
+        self.do_finer = do_finer
+        if not do_finer:
+            self.cor_ver = "cor_fields"
+        else:
+            self.cor_ver = "cor_finer"
         self.blind_ver = datname
         self.corDir = os.path.join(
             wrkDir, "cosmicShear/mocksim/%s_%s/" % (self.cor_ver, self.blind_ver)
@@ -73,9 +77,17 @@ if __name__ == "__main__":
         "--maxId", required=True, type=int, help="maximum id number, e.g. 1404"
     )
     parser.add_argument(
+        "--field",
+        required=True,
+        type=str,
+        help="field name, all, XMM, VVDS or GAMA09H, HECTOMAP etc.",
+    )
+    parser.add_argument(
         "--datname", default="cat0", type=str, help="data name. cat0, cat1 or cat2"
     )
-    parser.add_argument("--field", required=True, type=str, help="field name")
+    parser.add_argument(
+        "--finer", default=False, type=bool, help="whether do finer for B-mode test"
+    )
     # mpi
     group = parser.add_mutually_exclusive_group()
     group.add_argument(
@@ -91,7 +103,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     pool = schwimmbad.choose_pool(mpi=args.mpi, processes=args.n_cores)
-    worker = Worker(args.datname, args.field)
+    worker = Worker(args.datname, args.field, args.finer)
     refs = list(range(args.minId, args.maxId))
     outputs = []
     for r in pool.map(worker, refs):

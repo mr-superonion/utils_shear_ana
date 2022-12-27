@@ -17,12 +17,16 @@ corrs = np.array([1.17133725, 1.08968149, 1.06929737, 1.05591374])
 
 
 class Worker(object):
-    def __init__(self, datname, fieldname):
+    def __init__(self, datname, fieldname, do_finer):
         self.nz = 4
         self.blind_ver = datname
         self.fieldname = fieldname
         wrkDir = os.environ["homeWrk"]
-        self.cor_ver = "cor_fields"
+        self.do_finer = do_finer
+        if not self.do_finer:
+            self.cor_ver = "cor_fields"
+        else:
+            self.cor_ver = "cor_finer"
         self.oDir = os.path.join(
             wrkDir, "cosmicShear/mocksim/%s_%s/" % (self.cor_ver, self.blind_ver)
         )
@@ -57,7 +61,6 @@ class Worker(object):
         )
         msk = (dd["noise1_int"] ** 2.0 + dd["noise2_int"] ** 2.0) < 10.0
         msk = msk & ((dd["noise1_mea"] ** 2.0 + dd["noise2_mea"] ** 2.0) < 10.0)
-        print(np.sum(~msk))
         dd = dd[msk]
         del msk
         cat = mea2pcf.convert_mock2treecat(
@@ -69,7 +72,10 @@ class Worker(object):
         isim = ref // 13
         irot = ref % 13
         # correlation version
-        cor = mea2pcf.corDF
+        if not self.do_finer:
+            cor = mea2pcf.corDF
+        else:
+            cor = mea2pcf.corB360
         flist = glob.glob(
             os.path.join(
                 self.oDir, "r%03d_rotmat%d_%s_cor*.fits" % (isim, irot, self.fieldname)
@@ -127,10 +133,13 @@ if __name__ == "__main__":
         "--field",
         required=True,
         type=str,
-        help="field name, all, XMM, VVDS or GAMA09H etc.",
+        help="field name, all, XMM, VVDS or GAMA09H, HECTOMAP etc.",
     )
     parser.add_argument(
         "--datname", default="cat0", type=str, help="data name. cat0, cat1 or cat2"
+    )
+    parser.add_argument(
+        "--finer", default=False, type=bool, help="whether do finer for B-mode test"
     )
     group = parser.add_mutually_exclusive_group()
     group.add_argument(
@@ -146,7 +155,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     pool = schwimmbad.choose_pool(mpi=args.mpi, processes=args.n_cores)
-    worker = Worker(args.datname, args.field)
+    worker = Worker(args.datname, args.field, args.finer)
     refs = list(range(args.minId, args.maxId))
     for r in pool.map(worker, refs):
         pass
