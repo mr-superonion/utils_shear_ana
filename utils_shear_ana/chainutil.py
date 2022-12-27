@@ -46,9 +46,9 @@ def pvalue_of_chi2(chi2, dof, hartlap_nsim=1404, hartlap_ndata=140):
     Returns:
         p(float):       p-value
     """
-    if hartlap_nsim>0:
-        corr_chi2 = (hartlap_nsim-hartlap_ndata-2) / (hartlap_nsim-1)
-        chi2 = chi2*corr_chi2
+    if hartlap_nsim > 0:
+        corr_chi2 = (hartlap_nsim - hartlap_ndata - 2) / (hartlap_nsim - 1)
+        chi2 = chi2 * corr_chi2
     p = 1.0 - stats.chi2.cdf(chi2, round(dof))
     return p
 

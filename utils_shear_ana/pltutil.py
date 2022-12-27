@@ -112,16 +112,15 @@ rangeDict = {
     "a_bary": [2.0, 3.13],
     "logt_agn": [7.2, 8.3],
     "a": [-5, 5],
-    "a1": [-5., 5.],
-    "a2": [-5., 5.],
-    "alpha": [-6., 5.],
-    "alpha1": [-5., 5.],
-    "alpha2": [-5., 5.],
+    "a1": [-5.0, 5.0],
+    "a2": [-5.0, 5.0],
+    "alpha": [-6.0, 5.0],
+    "alpha1": [-5.0, 5.0],
+    "alpha2": [-5.0, 5.0],
     "bias_3": [-0.5, 0.5],
     "bias_4": [-0.5, 0.5],
-    "bias_ta": [0, 2.],
+    "bias_ta": [0, 2.0],
 }
-
 
 
 class MinorSymLogLocator(Locator):
@@ -184,7 +183,7 @@ hsc_marker = {
     "XMM": "o",
 }
 
-colors = plt.rcParams['axes.prop_cycle'].by_key()['color']
+colors = plt.rcParams["axes.prop_cycle"].by_key()["color"]
 
 colors0 = [
     "black",
@@ -617,7 +616,6 @@ def make_tpcf_plot(title="xi", nzs=4):
     return fig, axes
 
 
-
 # import seaborn as sns
 # def plot_cov(covIn, vmin=-3e-12, vmax=3e-11):
 #     """Makes plot for covariance matrix for cosmic shear
@@ -680,7 +678,7 @@ def plot_chain_corner(clist, cnlist, blind_by, nlist, truth=None, scale=2.5):
         sigmas = [0, 1]
     elif scale < 3:
         sigmas = [0, 1, 2]
-    elif scale <  10:
+    elif scale < 10:
         sigmas = [0, 1, 2, 3]
     else:
         raise ValueError("scale need to be greater than 1.05 and smaller than 10")
@@ -703,9 +701,7 @@ def plot_chain_corner(clist, cnlist, blind_by, nlist, truth=None, scale=2.5):
             statistics=stat0,
         )
         stat = c.analysis.get_summary()
-        avel = np.array(
-                [stat[latexDict[ni]][1] for ni in nlistb]
-                )
+        avel = np.array([stat[latexDict[ni]][1] for ni in nlistb])
         del c, oo, stat
     else:
         avel = np.array([0] * len(nlistb))
@@ -715,16 +711,8 @@ def plot_chain_corner(clist, cnlist, blind_by, nlist, truth=None, scale=2.5):
         # blind sigma_8 and omega_m
         chain_name = cnlist[ii]
         nlist2 = [nn for nn in nlist if nn in oo.dtype.names]
-        ll = [
-            oo[nn] - avel[nlistb.index(nn)]
-            for nn in nlist2
-            if nn in nlistb
-        ]
-        ll2 = [
-            oo[nn]
-            for nn in nlist2
-            if nn not in nlistb
-        ]
+        ll = [oo[nn] - avel[nlistb.index(nn)] for nn in nlist2 if nn in nlistb]
+        ll2 = [oo[nn] for nn in nlist2 if nn not in nlistb]
         c.add_chain(
             ll + ll2,
             weights=oo["weight"],
@@ -743,9 +731,9 @@ def plot_chain_corner(clist, cnlist, blind_by, nlist, truth=None, scale=2.5):
         statistics=stat0,
         label_font_size=14,
         linewidths=1.5,
-        spacing=0.,
+        spacing=0.0,
         max_ticks=3,
-        sigmas = sigmas,
+        sigmas=sigmas,
         summary=True,
         legend_kwargs={"loc": "lower right", "fontsize": 20},
     )
@@ -759,7 +747,7 @@ def plot_chain_corner(clist, cnlist, blind_by, nlist, truth=None, scale=2.5):
     return fig
 
 
-def get_summary_extents(stat, pnlist, clist, scale=1.):
+def get_summary_extents(stat, pnlist, clist, scale=1.0):
     """Estimates the extent for chains used for summary plot
 
     Args:
@@ -793,12 +781,12 @@ def get_summary_extents(stat, pnlist, clist, scale=1.):
     emax = np.nanmax(np.array(emax), axis=0)
     ecen = (emin + emax) / 2.0
     edd = np.max(np.stack([np.abs(emin - ecen), np.abs(emax - ecen)]), axis=0) * 1.32
-    exts = [[ecen[i] - edd[i]*scale, ecen[i] + edd[i]*scale] for i in range(npar)]
-    for ie,ee in enumerate(exts):
+    exts = [[ecen[i] - edd[i] * scale, ecen[i] + edd[i] * scale] for i in range(npar)]
+    for ie, ee in enumerate(exts):
         nn = pnlist[ie]
         if nn in rangeDict.keys():
-            ee[0] = max(rangeDict[nn][0],ee[0])
-            ee[1] = min(rangeDict[nn][1],ee[1])
+            ee[0] = max(rangeDict[nn][0], ee[0])
+            ee[1] = min(rangeDict[nn][1], ee[1])
     return exts
 
 
@@ -815,8 +803,7 @@ def get_summary_lims(stat, pnlist, clist):
     npar = len(pnlist)
     nchain = len(clist)
     parlims = [
-        [stat[j][latexDict[pnlist[i]]] for i in range(npar)]
-        for j in range(nchain)
+        [stat[j][latexDict[pnlist[i]]] for i in range(npar)] for j in range(nchain)
     ]
     return parlims
 
@@ -915,7 +902,7 @@ def plot_chain_summary(
                 axes[j].axvspan(lower0, upper0, color="gray", alpha=0.2)
                 axes[j].set_title(latexDict[pnlist[j]], fontsize=20)
                 axes[j].set_xlim(extent[j])
-    plt.ylim(-0.5, nchain-0.5)
+    plt.ylim(-0.5, nchain - 0.5)
     plt.yticks(range(nchain), cnlist)
     plt.gca().invert_yaxis()
     plt.subplots_adjust(wspace=0, hspace=0)

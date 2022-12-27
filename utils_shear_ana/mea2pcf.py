@@ -50,6 +50,7 @@ corB360 = treecorr.GGCorrelation(
     nbins=360, min_sep=0.21, max_sep=420.0, sep_units="arcmin"
 )
 
+
 class EBmode:
     def __init__(self, Dir, nzs=4, tmin=0.3, tmax=400.0):
         """Class to do EB mode separation based on equations (25) and (26) in

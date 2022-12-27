@@ -51,6 +51,7 @@ nzallDF = (nzsDF + 1) * nzsDF // 2
 # ......
 # xim[zN,zN,theta1].. xim[z1,z1,thetaN] ..
 
+
 class Interp1d(object):
     def __init__(self, angle, spec, bounds_error=False):
         if np.all(spec > 0):
@@ -90,8 +91,6 @@ class Interp1d(object):
             interp_vals[-1] *= 1 - 1.0e-9
             spec = self.y_func(self.interp_func(interp_vals))
         return spec
-
-
 
 
 def make_empty_sep_mask(nzs, ntheta):
@@ -462,7 +461,9 @@ def make_cosmosis_tpcf_hdulist_model(
 
     hdu0 = pyfits.PrimaryHDU()
     if covmat is None:
-        logging.warn("Do not have input covariance matrix, using a covariance matrix close to zero.")
+        logging.warn(
+            "Do not have input covariance matrix, using a covariance matrix close to zero."
+        )
         covmat = np.eye(len(tabP) + len(tabM)) * 1e-12
     assert covmat.shape == (len(tabP) + len(tabM), len(tabP) + len(tabM))
     hduCov = make_cscov_hdu(

@@ -4,7 +4,7 @@ import os
 import time
 import argparse
 
-script="""
+script = """
 #!/bin/bash
 #PBS -q %s
 #PBS -l nodes=%d:ppn=%d
@@ -28,42 +28,52 @@ date
 
 # source ./shear_config
 
+
 def submit_job(inifile, queue):
     jobname = inifile.split(".ini")[0].split("configs/")[-1]
     # assume to use maximum resource for each queue
     host = os.environ["HOSTNAME"][0:2]
-    if host=="id": # idark
+    if host == "id":  # idark
         nodes_ppn = {
-                "tiny":[1,1,1], "mini":[1,52,52],
-                "mini_B":[1,52,52], "small":[4,52,208],
-                "large":[20,52,1040]
-                }[queue]
+            "tiny": [1, 1, 1],
+            "mini": [1, 52, 52],
+            "mini_B": [1, 52, 52],
+            "small": [4, 52, 208],
+            "large": [20, 52, 1040],
+        }[queue]
         walltime = ""
-    elif host == "gw": # gw
+    elif host == "gw":  # gw
         nodes_ppn = {
-                "tiny":[1,1,1], "mini":[1,28,28],
-                "small":[4, 28, 112], "mini2":[1,504,504]
-                }[queue]
+            "tiny": [1, 1, 1],
+            "mini": [1, 28, 28],
+            "small": [4, 28, 112],
+            "mini2": [1, 504, 504],
+        }[queue]
         walltime = "#PBS -l walltime=7:00:00:00"
-    elif host == "fe": # gfarm
-        nodes_ppn = {
-                "tiny":[1,1,1], "mini":[1,20,20],
-                "small":[6,20,120]
-                }[queue]
+    elif host == "fe":  # gfarm
+        nodes_ppn = {"tiny": [1, 1, 1], "mini": [1, 20, 20], "small": [6, 20, 120]}[
+            queue
+        ]
         walltime = ""
     else:
         raise ValueError("Does not support the currect server")
 
     if nodes_ppn[2] == 1:
-        command = "cosmosis %s" %inifile
+        command = "cosmosis %s" % inifile
     else:
-        command = "mpirun -n %d cosmosis --mpi %s"%(nodes_ppn[2], inifile)
+        command = "mpirun -n %d cosmosis --mpi %s" % (nodes_ppn[2], inifile)
 
-    jobscript = script%(
-            queue, nodes_ppn[0], nodes_ppn[1],
-            jobname, jobname, jobname, walltime,
-            os.getcwd(), command,
-            )
+    jobscript = script % (
+        queue,
+        nodes_ppn[0],
+        nodes_ppn[1],
+        jobname,
+        jobname,
+        jobname,
+        walltime,
+        os.getcwd(),
+        command,
+    )
 
     print(jobscript)
     time.sleep(0.5)
@@ -75,17 +85,20 @@ def submit_job(inifile, queue):
     os.remove("script_temp.sh")
     return
 
+
 if __name__ == "__main__":
     # arguments
     parser = argparse.ArgumentParser()
-    parser.add_argument("inifile", type=str, nargs='+',
-            help="path of config file")
-    parser.add_argument("--queue", type=str,
-            help="tiny, mini, small, large", default="mini"
-            )
-    parser.add_argument("--jobname", type=str,
-            help="job name", default=None,
-            )
+    parser.add_argument("inifile", type=str, nargs="+", help="path of config file")
+    parser.add_argument(
+        "--queue", type=str, help="tiny, mini, small, large", default="mini"
+    )
+    parser.add_argument(
+        "--jobname",
+        type=str,
+        help="job name",
+        default=None,
+    )
 
     args = parser.parse_args()
     for ff in args.inifile:

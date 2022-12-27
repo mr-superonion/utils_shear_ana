@@ -57,10 +57,14 @@ def generate_delta_xip(params1, params2, sys_cors1, sys_cors2):
             "The shape of parameters 2 (%s) are not correct" % (params2.shape)
         )
 
-    return _generate_delta_xip(nzs, n_theta_bin,
-                               params1, params2,
-                               sys_cors1, sys_cors2,
-                               )
+    return _generate_delta_xip(
+        nzs,
+        n_theta_bin,
+        params1,
+        params2,
+        sys_cors1,
+        sys_cors2,
+    )
 
 
 def _generate_delta_xip(nzs, n_theta_bin, params1, params2, sys_cors1, sys_cors2):

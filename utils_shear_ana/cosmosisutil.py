@@ -32,7 +32,7 @@ def make_config_ini(
     datname="cat0",
     fieldname="all",
     sampler="multinest",
-    sid = 1,
+    sid=1,
     modules=None,
     valuename="fid",
     priorname="fid",
@@ -83,22 +83,29 @@ privacy = F\n\
 %%include $cosmosis_utils/config/s19a/models/likelihood.ini\n\
 "
     assert os.path.isdir("configs")
-    outfname = "configs/%s_%s_%s.ini" %(sampler, runname, datname)
+    outfname = "configs/%s_%s_%s.ini" % (sampler, runname, datname)
     if not os.path.isfile(outfname):
-        if sampler[-1] in ['2', '3', '4']:
+        if sampler[-1] in ["2", "3", "4"]:
             sampler0 = sampler[:-1]
         else:
             sampler0 = sampler
         with open(outfname, "wt") as outfile:
             outfile.write(
-                content%(
-                    runname, datname, fieldname,
-                    sampler0, valuename, priorname,
-                    modules, sampler, sid,
-                    )
+                content
+                % (
+                    runname,
+                    datname,
+                    fieldname,
+                    sampler0,
+                    valuename,
+                    priorname,
+                    modules,
+                    sampler,
+                    sid,
                 )
+            )
     else:
-        logging.warn("Already has output ini file: %s" %outfname)
+        logging.warn("Already has output ini file: %s" % outfname)
     return
 
 
@@ -136,8 +143,8 @@ sampler = %s\n\
 \n\
 [pipeline]\n\
 fast_slow = T\n\
-values = %%(confDir)s/pars2/%s_values.ini\n\
-priors = %%(confDir)s/pars2/%s_priors.ini\n\
+values = %%(confDir)s/pars/%s_values.ini\n\
+priors = %%(confDir)s/pars/%s_priors.ini\n\
 \n\
 modules = %s\n\
 \n\
@@ -157,21 +164,26 @@ privacy = F\n\
 %%include $cosmosis_utils/config/s19a/models/likelihood.ini\n\
 "
     assert os.path.isdir("configs")
-    outfname = "configs/%s_%s_%s.ini" %(sampler, runname, datname)
+    outfname = "configs/%s_%s_%s.ini" % (sampler, runname, datname)
     if not os.path.isfile(outfname):
-        if sampler[-1] in ['2', '3', '4']:
+        if sampler[-1] in ["2", "3", "4"]:
             sampler0 = sampler[:-1]
         else:
             sampler0 = sampler
         with open(outfname, "wt") as outfile:
             outfile.write(
-                content %(
-                    runname, datname, sampler0,
-                    valuename, priorname,
+                content
+                % (
+                    runname,
+                    datname,
+                    sampler0,
+                    valuename,
+                    priorname,
                     modules.replace("2pt_like", "2pt_like_sim"),
-                    sampler, sid,
-                    )
+                    sampler,
+                    sid,
                 )
+            )
     else:
-        logging.warn("Already has output ini file: %s" %outfname)
+        logging.warn("Already has output ini file: %s" % outfname)
     return

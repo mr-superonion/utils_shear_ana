@@ -15,6 +15,7 @@ cmaxM = 247.75
 
 nmocks = 1404
 
+
 def make_model_mock(Dir, blind=0, num=0):
     """Gets logr bins for xip and xim
 
@@ -26,72 +27,66 @@ def make_model_mock(Dir, blind=0, num=0):
     Dir = Dir.replace("./", "")
     assert "/" not in Dir, "do not support sub directory"
 
-    blind_ver= "cat%d" %blind
+    blind_ver = "cat%d" % blind
 
-    cor=mea2pcf.corDF
-    rnom=cor.rnom
+    cor = mea2pcf.corDF
+    rnom = cor.rnom
 
-    mskp=(rnom>cminP)&(rnom<cmaxP)
-    mskm=(rnom>cminM)&(rnom<cmaxM)
+    mskp = (rnom > cminP) & (rnom < cmaxP)
+    mskm = (rnom > cminM) & (rnom < cmaxM)
 
     # sampling points at logr
-    logr1=cor.logr[mskp]
-    logr2=cor.logr[mskm]
+    logr1 = cor.logr[mskp]
+    logr2 = cor.logr[mskm]
 
     # covariance
-    cov= pyfits.getdata(
-            os.path.join(
-                wrkDir,"analysis/%s_xipm/data_extend_all_%s.fits"
-                %(blind_ver,blind_ver)
-                )
-            )
-    assert cov.shape==((len(logr1)+len(logr2))*10,(len(logr1)+len(logr2))*10)
+    cov = pyfits.getdata(
+        os.path.join(
+            wrkDir, "analysis/%s_xipm/data_extend_all_%s.fits" % (blind_ver, blind_ver)
+        )
+    )
+    assert cov.shape == ((len(logr1) + len(logr2)) * 10, (len(logr1) + len(logr2)) * 10)
     # Hartlap correction since the inverse of cov will be used to generate
     # multivariate normal random mocks
     ndim = cov.shape[0]
     cov = cov * (nmocks - 1.0) / (nmocks - ndim - 2.0)
-    ofname=  '%s.fits' %Dir
+    ofname = "%s.fits" % Dir
     # msk array
-    out   =  datvutil.make_cosmosis_tpcf_hdulist_model(Dir,logr1,logr2,cov)
-    out.writeto(ofname,overwrite=True)
+    out = datvutil.make_cosmosis_tpcf_hdulist_model(Dir, logr1, logr2, cov)
+    out.writeto(ofname, overwrite=True)
     nxp = len(out[2].data)
     nxm = len(out[3].data)
 
     if num > 0:
         np.random.seed(1)
-        odir = "%s_ran" %Dir
+        odir = "%s_ran" % Dir
         os.makedirs(odir, exist_ok=True)
-        datAll=np.hstack([out[2].data['value'],out[3].data['value']])
-        mockAll=np.random.multivariate_normal(datAll, cov, num)
+        datAll = np.hstack([out[2].data["value"], out[3].data["value"]])
+        mockAll = np.random.multivariate_normal(datAll, cov, num)
 
         # write output
         for i in range(num):
-            ofname=  os.path.join(odir, "%s_ran%02d.fits" %(Dir,i))
+            ofname = os.path.join(odir, "%s_ran%02d.fits" % (Dir, i))
             out2 = out.copy()
-            out2[2].data['value'] = mockAll[i,:nxp]
-            out2[3].data['value'] = mockAll[i,nxp:]
-            out2.writeto(ofname,overwrite=True)
-            del out2,ofname
+            out2[2].data["value"] = mockAll[i, :nxp]
+            out2[3].data["value"] = mockAll[i, nxp:]
+            out2.writeto(ofname, overwrite=True)
+            del out2, ofname
     return
 
 
 if __name__ == "__main__":
     parser = ArgumentParser(description="fpfs procsim")
     parser.add_argument(
-        "dirname", type=str,
+        "dirname",
+        type=str,
         help="cosmosis model file name",
-        nargs='+',
+        nargs="+",
     )
     parser.add_argument(
-        "-b", "--blind",
-        type=int, default=0,
-        help="blinded version, 0, 1 or 2"
+        "-b", "--blind", type=int, default=0, help="blinded version, 0, 1 or 2"
     )
-    parser.add_argument(
-        "-n", "--num",
-        type=int, default=0,
-        help="number of simlations"
-    )
+    parser.add_argument("-n", "--num", type=int, default=0, help="number of simlations")
     args = parser.parse_args()
     for dd in args.dirname:
         make_model_mock(dd, args.blind, args.num)

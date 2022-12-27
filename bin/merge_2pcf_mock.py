@@ -72,8 +72,9 @@ if __name__ == "__main__":
     parser.add_argument(
         "--maxId", required=True, type=int, help="maximum id number, e.g. 1404"
     )
-    parser.add_argument("--datname", default="cat0", type=str,
-                        help="data name. cat0, cat1 or cat2")
+    parser.add_argument(
+        "--datname", default="cat0", type=str, help="data name. cat0, cat1 or cat2"
+    )
     parser.add_argument("--field", required=True, type=str, help="field name")
     # mpi
     group = parser.add_mutually_exclusive_group()
