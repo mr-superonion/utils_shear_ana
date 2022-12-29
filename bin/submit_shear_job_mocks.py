@@ -14,57 +14,48 @@ script = """
 #PBS -o stdout/%s.o
 #PBS -e stdout/%s.e
 %s
+%s
 
 export VAR=value
 
-cd %s
+run_id=$(printf "%%02d" ${PBS_ARRAYID})
+cd $PBS_O_WORKDIR
 
-echo "TASK starts at:"
-date
 %s
-echo "TASK ends at:"
-date
 """
 
 # source ./shear_config
 
 
-def submit_job(inifile, queue):
-    jobname = inifile.split(".ini")[0].split("configs/")[-1]
+def submit_job(inifile, min_id, max_id):
+    jobname = "mock_%d_%d" %(min_id, max_id)
     # assume to use maximum resource for each queue
     host = os.environ["HOSTNAME"][0:2]
     if host == "id":  # idark
+        queue = "large"
         nodes_ppn = {
-            "tiny": [1, 1, 1],
-            "mini": [1, 52, 52],
-            "mini_B": [1, 52, 52],
-            "small": [4, 52, 208],
-            "large": [20, 52, 1040],
+            "large": [16, 52, 832],
         }[queue]
         walltime = ""
     elif host == "gw":  # gw
+        queue = "small"
         nodes_ppn = {
-            "tiny": [1, 1, 1],
-            "mini": [1, 28, 28],
             "small": [4, 28, 112],
-            "mini2": [1, 504, 504],
         }[queue]
         walltime = "#PBS -l walltime=7:00:00:00"
     elif host == "fe":  # gfarm
+        queue = "small"
         nodes_ppn = {
-            "tiny": [1, 1, 1],
-            "mini": [1, 20, 20],
             "small": [6, 20, 120]
         }[queue]
         walltime = ""
     else:
         raise ValueError("Does not support the currect server")
-
-    if nodes_ppn[2] == 1:
-        command = "cosmosis %s" % inifile
-    else:
-        command = "mpirun -n %d cosmosis --mpi %s" % (nodes_ppn[2], inifile)
-
+    queue_array = "#PBS -t %d-%d%%%d" %(min_id, max_id, nodes_ppn[0])
+    command = "mpirun -n %d cosmosis --mpi %s" % (
+        nodes_ppn[1],
+        inifile.replace("xx", "$run_id"),
+    )
     jobscript = script % (
         queue,
         nodes_ppn[0],
@@ -72,8 +63,8 @@ def submit_job(inifile, queue):
         jobname,
         jobname,
         jobname,
+        queue_array,
         walltime,
-        os.getcwd(),
         command,
     )
 
@@ -82,22 +73,30 @@ def submit_job(inifile, queue):
 
     with open("script_temp.sh", "w") as f:
         f.write(jobscript)
-
-    os.system("qsub script_temp.sh")
-    os.remove("script_temp.sh")
+    # os.system("qsub script_temp.sh")
+    # os.remove("script_temp.sh")
     return
 
 
 if __name__ == "__main__":
     # arguments
     parser = argparse.ArgumentParser()
-    parser.add_argument("inifile", type=str, nargs="+", help="path of config file")
     parser.add_argument(
-        "--queue", type=str, help="tiny, mini, small, large", default="mini"
+        "inifile",
+        type=str,
+        help="path of config file",
     )
-
+    parser.add_argument(
+        "--min_id",
+        type=int,
+        help="minimum id of the mocks",
+    )
+    parser.add_argument(
+        "--max_id",
+        type=int,
+        help="maximum id of the mocks",
+    )
     args = parser.parse_args()
-    for ff in args.inifile:
-        if ("minuit" in ff) or ("maxlike" in ff):
-            assert args.queue == "tiny"
-        submit_job(ff, args.queue)
+    if not "xx" in args.inifile:
+        raise ValueError("inifile does not have 'xx'")
+    submit_job(args.inifile, args.min_id, args.max_id)
