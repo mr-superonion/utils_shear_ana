@@ -49,11 +49,9 @@ def make_model_mock(Dir, blind=0, num=0):
     # Hartlap correction since the inverse of cov will be used to generate
     # multivariate normal random mocks
     ndim = cov.shape[0]
-    cov = cov * (nmocks - 1.0) / (nmocks - ndim - 2.0)
-    ofname = "%s.fits" % Dir
-    # msk array
-    out = datvutil.make_cosmosis_tpcf_hdulist_model(Dir, logr1, logr2, cov)
-    out.writeto(ofname, overwrite=True)
+    cov2 = cov * (nmocks - 1.0) / (nmocks - ndim - 2.0)
+    out = datvutil.make_cosmosis_tpcf_hdulist_model(Dir, logr1, logr2, cov2)
+    out.writeto("%s.fits" % Dir, overwrite=True)
     nxp = len(out[2].data)
     nxm = len(out[3].data)
 
