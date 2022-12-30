@@ -42,7 +42,7 @@ def submit_job(inifile, min_id, max_id):
         nodes_ppn = {
             "small": [4, 28, 112],
         }[queue]
-        walltime = "#PBS -l walltime=7:00:00:00"
+        walltime = "#PBS -l walltime=2:00:00:00"
     elif host == "fe":  # gfarm
         queue = "small"
         nodes_ppn = {
@@ -73,8 +73,8 @@ def submit_job(inifile, min_id, max_id):
 
     with open("script_temp.sh", "w") as f:
         f.write(jobscript)
-    # os.system("qsub script_temp.sh")
-    # os.remove("script_temp.sh")
+    os.system("qsub script_temp.sh")
+    os.remove("script_temp.sh")
     return
 
 

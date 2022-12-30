@@ -54,12 +54,15 @@ def make_model_mock(Dir, blind=0, num=0):
     out.writeto("%s.fits" % Dir, overwrite=True)
     nxp = len(out[2].data)
     nxm = len(out[3].data)
+    del cov2
 
     if num > 0:
         np.random.seed(1)
         odir = "%s_ran" % Dir
         os.makedirs(odir, exist_ok=True)
         datAll = np.hstack([out[2].data["value"], out[3].data["value"]])
+        # note, here we use biased covariance without Hartlap correction, which
+        # mimic the real data set
         mockAll = np.random.multivariate_normal(datAll, cov, num)
 
         # write output
