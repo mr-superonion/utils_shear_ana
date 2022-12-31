@@ -15,6 +15,7 @@ scripts = [
         "bin/make_mock_datav.py",
         "bin/make_cosmosis_ini.py",
         "bin/submit_shear_job.py",
+        "bin/submit_shear_job_mocks.py",
         "bin/shear_config",
         ]
 
