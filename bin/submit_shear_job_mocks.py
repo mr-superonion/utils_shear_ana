@@ -34,7 +34,7 @@ def submit_job(inifile, min_id, max_id):
     if host == "id":  # idark
         queue = "large"
         nodes_ppn = {
-            "large": [16, 52, 832],
+            "large": [15, 52, 832],
         }[queue]
         walltime = ""
     elif host == "gw":  # gw
