@@ -30,7 +30,7 @@ from matplotlib.ticker import Locator
 
 # some default setups
 kde0 = 1.4
-stat0 = "max"
+stat0 = "mean"
 
 
 chain_labels_dict = {

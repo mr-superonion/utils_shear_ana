@@ -46,24 +46,23 @@ def make_model_mock(Dir, blind=0, num=0):
         )
     )
     assert cov.shape == ((len(logr1) + len(logr2)) * 10, (len(logr1) + len(logr2)) * 10)
-    # Hartlap correction since the inverse of cov will be used to generate
-    # multivariate normal random mocks
-    ndim = cov.shape[0]
-    cov2 = cov * (nmocks - 1.0) / (nmocks - ndim - 2.0)
-    out = datvutil.make_cosmosis_tpcf_hdulist_model(Dir, logr1, logr2, cov2)
+    # note, here we use biased covariance without Hartlap correction, which
+    # mimic the real data set
+    out = datvutil.make_cosmosis_tpcf_hdulist_model(Dir, logr1, logr2, cov)
     out.writeto("%s.fits" % Dir, overwrite=True)
     nxp = len(out[2].data)
     nxm = len(out[3].data)
-    del cov2
 
     if num > 0:
+        # Hartlap correction since the inverse of cov will be used to generate
+        # multivariate normal random mocks
+        ndim = cov.shape[0]
+        cov2 = cov * (nmocks - 1.0) / (nmocks - ndim - 2.0)
         np.random.seed(1)
         odir = "%s_ran" % Dir
         os.makedirs(odir, exist_ok=True)
         datAll = np.hstack([out[2].data["value"], out[3].data["value"]])
-        # note, here we use biased covariance without Hartlap correction, which
-        # mimic the real data set
-        mockAll = np.random.multivariate_normal(datAll, cov, num)
+        mockAll = np.random.multivariate_normal(datAll, cov2, num)
 
         # write output
         for i in range(num):
