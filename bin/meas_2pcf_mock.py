@@ -141,6 +141,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--finer", default=False, type=bool, help="whether do finer for B-mode test"
     )
+    # mpi
     group = parser.add_mutually_exclusive_group()
     group.add_argument(
         "--ncores",

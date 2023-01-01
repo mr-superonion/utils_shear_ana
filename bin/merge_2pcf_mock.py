@@ -38,8 +38,9 @@ class Worker(object):
         )
         if len(flist) != self.nz * (self.nz + 1) / 2:
             print(
-                "Do not have all the simulations for isim: %d, irot: %d, field: %s"
-                % (isim, irot, self.fieldname)
+                "Do not have all the simulations for ",
+                "isim: %d, irot: %d, field: %s" % (isim, irot, self.fieldname),
+                "under %s" %(self.corDir),
             )
             return
 
@@ -54,11 +55,11 @@ class Worker(object):
                 )
                 data = fitsio.read(fname)
                 dd = np.hstack([data["xip"], data["xim"]])
-                if not np.all((np.abs(dd) > 1e-20) & (np.abs(dd) < 1e-3)):
-                    print(
-                        "Find a problematic simulation: isim: %d, irot: %d, field: %s"
-                        % (isim, irot, self.fieldname)
-                    )
+                # if not np.all((np.abs(dd) > 1e-20) & (np.abs(dd) < 1e-3)):
+                #     print(
+                #         "Find a problematic simulation: isim: %d, irot: %d, field: %s"
+                #         % (isim, irot, self.fieldname)
+                #     )
                 dd_all.append(dd)
                 del data
         dd_all = np.stack(dd_all)
