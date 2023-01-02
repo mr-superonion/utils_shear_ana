@@ -17,6 +17,8 @@ scripts = [
         "bin/submit_shear_job.py",
         "bin/submit_shear_job_mocks.py",
         "bin/shear_config",
+        "bin/meas_2pcf_mock.py",
+        "bin/merge_2pcf_mock.py",
         ]
 
 setup(
