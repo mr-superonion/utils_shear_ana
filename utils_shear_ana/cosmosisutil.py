@@ -56,6 +56,7 @@ confDir=$cosmosis_utils/config/s19a/\n\
 runname=%s\n\
 datname=%s\n\
 fieldname=%s\n\
+pname=\n\
 \n\
 [runtime]\n\
 sampler = %s\n\
@@ -137,6 +138,7 @@ confDir=$cosmosis_utils/config/s19a/\n\
 runname=%s\n\
 datname=%s\n\
 fieldname=all\n\
+pname=\n\
 \n\
 [runtime]\n\
 sampler = %s\n\
