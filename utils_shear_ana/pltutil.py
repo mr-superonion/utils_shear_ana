@@ -699,6 +699,10 @@ def plot_chain_corner(clist, cnlist, blind_by, nlist, truth=None, scale=2.5):
             posterior=oo["post"],
             kde=kde0,
             statistics=stat0,
+            plot_point=False,
+        )
+        c.configure(
+            statistics=stat0,
         )
         stat = c.analysis.get_summary()
         avel = np.array([stat[latexDict[ni]][1] for ni in nlistb])
@@ -720,6 +724,7 @@ def plot_chain_corner(clist, cnlist, blind_by, nlist, truth=None, scale=2.5):
             posterior=oo["post"],
             kde=kde0,
             name=chain_name,
+            statistics=stat0,
             plot_point=False,
         )
         del ll, ll2, nlist2
@@ -738,7 +743,6 @@ def plot_chain_corner(clist, cnlist, blind_by, nlist, truth=None, scale=2.5):
         legend_kwargs={"loc": "lower right", "fontsize": 20},
     )
     stat = np.atleast_1d(c.analysis.get_summary())
-    print(stat)
     lnlist = [latexDict[nn] for nn in nlist]
     idx = np.sort(np.unique(lnlist, return_index=True)[1])
     nlist2 = [nlist[ii] for ii in idx]

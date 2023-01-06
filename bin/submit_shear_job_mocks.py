@@ -32,27 +32,28 @@ def submit_job(inifile, min_id, max_id):
     # assume to use maximum resource for each queue
     host = os.environ["HOSTNAME"][0:2]
     if host == "id":  # idark
-        queue = "large"
+        queue = "mini"
         nodes_ppn = {
-            "large": [15, 52, 832],
+            "mini": [1, 52, 832],
         }[queue]
         walltime = ""
     elif host == "gw":  # gw
-        queue = "small"
+        queue = "mini"
         nodes_ppn = {
-            "small": [4, 28, 112],
+            "mini": [1, 28, 112],
         }[queue]
         walltime = "#PBS -l walltime=2:00:00:00"
     elif host == "fe":  # gfarm
-        queue = "small"
+        queue = "mini"
         nodes_ppn = {
-            "small": [6, 20, 120]
+            "mini": [1, 20, 120]
         }[queue]
         walltime = ""
     else:
         raise ValueError("Does not support the currect server")
-    queue_array = "#PBS -t %d-%d%%%d" %(min_id, max_id, nodes_ppn[0])
-    command = "mpirun -n %d cosmosis --mpi %s" % (
+    per_run = min(nodes_ppn[1], (max_id - min_id)+1)
+    queue_array = "#PBS -t %d-%d%%%d" %(min_id, max_id, per_run)
+    command = "mpirun -n %d cosmosis %" % (
         nodes_ppn[1],
         inifile.replace("xx", "$run_id"),
     )
