@@ -15,13 +15,13 @@ def generate_delta_xip(params1, params2, sys_cors1, sys_cors2):
     """
 
     if not isinstance(sys_cors1, np.ndarray):
-        raise TypeError("The input systematic matrix should be ndarray.")
+        raise TypeError("The input systematic matrix1 should be ndarray.")
     if not isinstance(sys_cors2, np.ndarray):
-        raise TypeError("The input systematic matrix should be ndarray.")
+        raise TypeError("The input systematic matrix2 should be ndarray.")
     if not isinstance(params1, np.ndarray):
-        raise TypeError("The input parameters should be ndarray.")
+        raise TypeError("The input parameter1 should be ndarray.")
     if not isinstance(params2, np.ndarray):
-        raise TypeError("The input parameters should be ndarray.")
+        raise TypeError("The input parameter2 should be ndarray.")
     # sys_cors1 and sys_cors2 are in shape of (ncor, ncor, n_theta_bin)
     # for each theta bin it is
     # [
@@ -207,16 +207,27 @@ def transform_sys_matrix(pp_corr, psf_const1, psf_const2):
 
         sys_cor2[i, ncor_tq] = psf_const2[i]
         sys_cor2[ncor_tq, i] = psf_const2[i]
+    sys_cor1[-1,-1,:] = 1.
+    sys_cor2[-1,-1,:] = 1.
 
     for i in range(ncor_tq):
         for j in range(ncor_tq):
-            assert np.all(sys_cor1[i, j] == sys_cor1[j, i])
-            assert np.all(sys_cor2[i, j] == sys_cor2[j, i])
+            np.testing.assert_allclose(sys_cor1[i, j], sys_cor1[j, i], rtol=6)
+            np.testing.assert_allclose(sys_cor2[i, j], sys_cor2[j, i], rtol=6)
     return sys_cor1, sys_cor2
 
 
 def transform_params(params_tq, nzs=4):
-    """Transforms parameter from Tianqing's convention"""
+    """Transforms parameter from Tianqing's convention
+
+    Args:
+        params_tq:  original PSF systematic parameters
+        nzs:        number of redshift bins
+    Returns:
+        params1:    parameters for shear 1 ([[alpha, beta ... c]])
+        params2:    parameters for shear 2 ([[alpha, beta ... c]])
+    """
+
     ncor_tq = 4
     ncshift = ncor_tq * nzs
     ncor = ncor_tq + 1

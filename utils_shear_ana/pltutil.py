@@ -29,7 +29,7 @@ from .datvutil import Interp1d
 from matplotlib.ticker import Locator
 
 # some default setups
-kde0 = 1.4
+kde0 = 1.8
 stat0 = "mean"
 
 
@@ -120,6 +120,7 @@ rangeDict = {
     "bias_3": [-0.5, 0.5],
     "bias_4": [-0.5, 0.5],
     "bias_ta": [0, 2.0],
+    "a_s": [0.5e-9, 6e-9],
 }
 
 
@@ -463,7 +464,7 @@ def make_tpcf_plot(title="xi", nzs=4):
                     pad=-15,
                     x=0.8,
                 )
-            ax.grid()
+            # ax.grid()
             # x-axis
             ax.set_xscale("symlog", linthresh=1e-1)
             ax.xaxis.set_minor_locator(MinorSymLogLocator(1e-1))
@@ -552,7 +553,7 @@ def make_tpcf_plot(title="xi", nzs=4):
                     pad=-15,
                     x=0.8,
                 )
-            ax.grid()
+            # ax.grid()
             # x-axis
             ax.set_xscale("symlog", linthresh=1e-1)
             ax.xaxis.set_minor_locator(MinorSymLogLocator(1e-1))
