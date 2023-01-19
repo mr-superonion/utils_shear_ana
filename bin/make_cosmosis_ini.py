@@ -20,13 +20,14 @@ def main(datname, sampler, sid, inds, num):
     os.makedirs("outputs", exist_ok=True)
     os.makedirs("stdout", exist_ok=True)
     os.makedirs("configs", exist_ok=True)
+    psfname = "cat%s" %datname[3]
 
     # data or simulation
     is_data = datname in ["cat0", "cat1", "cat2"]
     if is_data:
         func = cosmosisutil.make_config_ini
         if num >= 0:
-            raise ValueError("num should less than 0 to run on real data")
+            raise ValueError("num should be less than 0 to run on real data")
     else:
         func = cosmosisutil.make_config_sim_ini
         # number of simulations
@@ -45,6 +46,7 @@ def main(datname, sampler, sid, inds, num):
             func(
                 runname=kk,
                 datname=datname,
+                psfname=psfname,
                 sampler=sampler,
                 sid=sid,
                 **ss[kk],

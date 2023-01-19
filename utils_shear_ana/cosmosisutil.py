@@ -30,6 +30,7 @@ modules_default = "free_params_sig8    consistency  \n\
 def make_config_ini(
     runname="fid",
     datname="cat0",
+    psfname="cat0",
     fieldname="all",
     sampler="multinest",
     sid=1,
@@ -55,6 +56,7 @@ def make_config_ini(
 confDir=$cosmosis_utils/config/s19a/\n\
 runname=%s\n\
 datname=%s\n\
+psfname=%s\n\
 fieldname=%s\n\
 pname=\n\
 \n\
@@ -96,6 +98,7 @@ privacy = F\n\
                 % (
                     runname,
                     datname,
+                    psfname,
                     fieldname,
                     sampler0,
                     valuename,
@@ -113,6 +116,7 @@ privacy = F\n\
 def make_config_sim_ini(
     runname="fid",
     datname="cowls85",
+    psfname="cat0",
     sampler="multinest",
     sid=1,
     modules=None,
@@ -137,6 +141,7 @@ def make_config_sim_ini(
 confDir=$cosmosis_utils/config/s19a/\n\
 runname=%s\n\
 datname=%s\n\
+psfname=%s\n\
 fieldname=all\n\
 pname=\n\
 \n\
@@ -178,6 +183,7 @@ privacy = F\n\
                 % (
                     runname,
                     datname,
+                    psfname,
                     sampler0,
                     valuename,
                     priorname,
