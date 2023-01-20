@@ -26,17 +26,20 @@ case "$HOSTNAME" in
 	"gw1.local")   source /work/xiangchong.li/setupCosmosisMpich2.sh &&
             export "cosmosis_utils=/work/xiangchong.li/superonionGW/code/hsc/utils_cosmosis" &&
             export "shear_utils=/work/xiangchong.li/superonionGW/code/hsc/utils_shear_ana" &&
-            export "rootDir=/work/xiangchong.li/work/cosmicShear/";;
+            export "rootDir=/work/xiangchong.li/work/cosmicShear/" &&
+            export PYTHONPATH="/home/xiangchong.li/.local/lib/python3.10/site-packages/":$PYTHONPATH;;
             # for gw
 	"fe")   source /gpfs02/work/xiangchong.li/ana/setupCosmosis2.sh &&
             export "cosmosis_utils=/work/xiangchong.li/code/hsc/utils_cosmosis" &&
             export "shear_utils=/work/xiangchong.li/code/hsc/utils_shear_ana" &&
-            export "rootDir=/gpfs02/work/xiangchong.li/work/cosmicShear";;
+            export "rootDir=/gpfs02/work/xiangchong.li/work/cosmicShear" &&
+            export PYTHONPATH="/home/xiangchong.li/.local/lib/python3.10/site-packages/":$PYTHONPATH;;
             # for gfarm
 	"idark")   source /lustre/work/xiangchong.li/ana/setupCosmosis2.zsh &&
             export "cosmosis_utils=/lustre/work/xiangchong.li/superonionIDark/code/hsc/utils_cosmosis" &&
             export "shear_utils=/lustre/work/xiangchong.li/superonionIDark/code/hsc/utils_shear_ana" &&
-            export "rootDir=/lustre/work/xiangchong.li/work/cosmicShear";;
+            export "rootDir=/lustre/work/xiangchong.li/work/cosmicShear" &&
+            export PYTHONPATH="/home/xiangchong.li/.local/lib/python3.10/site-packages/":$PYTHONPATH;;
             # for idark
 	"m005.opa.vera.psc.edu")   source /hildafs/projects/phy200017p/share/ana/setupCosmosis2 &&
             export "cosmosis_utils=/hildafs/home/xiangchl/superonionVera/code/hsc/utils_cosmosis" &&
@@ -46,4 +49,4 @@ case "$HOSTNAME" in
 	*) echo "we do not support the server $HOSTNAME";;
 esac
 
-echo "Your shell is now configured to run shear analysis code"
+echo "Your shell is now configured tk run shear analysis code"

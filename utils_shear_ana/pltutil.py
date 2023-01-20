@@ -29,7 +29,7 @@ from .datvutil import Interp1d
 from matplotlib.ticker import Locator
 
 # some default setups
-kde0 = 1.8
+kde0 = 1.2
 stat0 = "mean"
 
 
@@ -120,7 +120,7 @@ rangeDict = {
     "bias_3": [-0.5, 0.5],
     "bias_4": [-0.5, 0.5],
     "bias_ta": [0, 2.0],
-    "a_s": [0.5e-9, 6e-9],
+    "a_s": [0.5e-9, 10e-9],
 }
 
 
