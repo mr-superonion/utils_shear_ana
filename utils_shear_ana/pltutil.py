@@ -29,8 +29,8 @@ from .datvutil import Interp1d
 from matplotlib.ticker import Locator
 
 # some default setups
-kde0 = 1.6
-stat0 = "mean"
+kde0 = 2.
+stat0 = "max"
 
 
 chain_labels_dict = {
@@ -107,6 +107,7 @@ latexDict = {
 
 rangeDict = {
     "ombh2": [0.02, 0.025],
+    "a_s": [0.6e-9, 10e-9],
     "n_s": [0.87, 1.07],
     "h0": [0.62, 0.80],
     "a_bary": [2.0, 3.13],
@@ -120,7 +121,6 @@ rangeDict = {
     "bias_3": [-0.5, 0.5],
     "bias_4": [-0.5, 0.5],
     "bias_ta": [0, 2.0],
-    "a_s": [0.5e-9, 10e-9],
 }
 
 
@@ -663,7 +663,14 @@ def plot_cov_coeff(covIn):
     return fig
 
 
-def plot_chain_corner(clist, cnlist, blind_by, nlist, truth=None, scale=2.5):
+def plot_chain_corner(clist,
+    cnlist,
+    blind_by,
+    nlist,
+    truth=None,
+    scale=2.5,
+    stat_method = stat0
+    ):
     """Makes the corner plots for posteriors
 
     Args:
@@ -699,11 +706,11 @@ def plot_chain_corner(clist, cnlist, blind_by, nlist, truth=None, scale=2.5):
             parameters=[latexDict[nn] for nn in nlistb],
             posterior=oo["post"],
             kde=kde0,
-            statistics=stat0,
+            statistics=stat_method,
             plot_point=False,
         )
         c.configure(
-            statistics=stat0,
+            statistics=stat_method,
         )
         stat = c.analysis.get_summary()
         avel = np.array([stat[latexDict[ni]][1] for ni in nlistb])
@@ -725,7 +732,7 @@ def plot_chain_corner(clist, cnlist, blind_by, nlist, truth=None, scale=2.5):
             posterior=oo["post"],
             kde=kde0,
             name=chain_name,
-            statistics=stat0,
+            statistics=stat_method,
             plot_point=False,
         )
         del ll, ll2, nlist2
@@ -734,7 +741,7 @@ def plot_chain_corner(clist, cnlist, blind_by, nlist, truth=None, scale=2.5):
         shade=False,
         flip=False,
         bar_shade=True,
-        statistics=stat0,
+        statistics=stat_method,
         label_font_size=14,
         linewidths=1.5,
         spacing=0.0,
@@ -814,7 +821,8 @@ def get_summary_lims(stat, pnlist, clist):
 
 
 def plot_chain_summary(
-    clist, cnlist, blind_by="fiducial", pnlist=["omega_m", "sigma_8", "s_8"], nstat=1
+    clist, cnlist, blind_by="fiducial", pnlist=["omega_m", "sigma_8", "s_8"],
+    nstat=1, stat_method=stat0,
 ):
     """Plots the summary for a list of chains
 
@@ -844,7 +852,7 @@ def plot_chain_summary(
             parameters=[latexDict[nn] for nn in pnlist],
             posterior=oo["post"],
             kde=kde0,
-            statistics=stat0,
+            statistics=stat_method,
         )
         stat = c.analysis.get_summary()
         avel = [stat[latexDict[pnlist[i]]][1] for i in range(npar)]
@@ -861,7 +869,7 @@ def plot_chain_summary(
             posterior=oo["post"],
             kde=kde0,
         )
-    c.configure(global_point=False, statistics=stat0)
+    c.configure(global_point=False, statistics=stat_method)
     stat = np.atleast_1d(c.analysis.get_summary())
     parlims = get_summary_lims(stat, pnlist, clist)
     extent = get_summary_extents(stat, pnlist, clist, scale=1.5)
@@ -870,7 +878,7 @@ def plot_chain_summary(
         parlims = [parlims]
     elif nstat == 2:
         pass
-        # c.configure(global_point=True, statistics=stat0)
+        # c.configure(global_point=True, statistics=stat_method)
         # stat = c.analysis.get_summary()
         # parlims2 = get_summary_lims(stat, pnlist, clist)
         # parlims = [parlims, parlims2]
@@ -879,7 +887,7 @@ def plot_chain_summary(
         raise ValueError("nstat can only be 1 or 2.")
 
     fig, axes = plt.subplots(
-        1, npar, sharey=True, figsize=((npar + 1) * 2, nchain // 2)
+        1, npar, sharey=True, figsize=((npar + 1) * 2, nchain // 2),
     )
     lower0 = None
     upper0 = None
@@ -904,13 +912,14 @@ def plot_chain_summary(
                     color=colors[0],
                 )
             if h == 0:
+                axes[j].tick_params(axis='both', which='major', labelsize=14)
                 axes[j].axvspan(lower0, upper0, color="gray", alpha=0.2)
                 axes[j].set_title(latexDict[pnlist[j]], fontsize=20)
                 axes[j].set_xlim(extent[j])
     plt.ylim(-0.5, nchain - 0.5)
     plt.yticks(range(nchain), cnlist)
     plt.gca().invert_yaxis()
-    plt.subplots_adjust(wspace=0, hspace=0)
+    plt.subplots_adjust(wspace=0.1, hspace=0)
     return fig
 
 
@@ -1056,7 +1065,7 @@ def plot_xipm_model(
             ax.set_xlim(pmin, pmax)
             if blind:
                 ax.set_yticks([])
-            ax.axvspan(7.0, 58.0, color="gray", alpha=0.2)
+            ax.axvspan(7.13, 56.52,color=colors[-1],alpha=0.2)
             del ax, xx, yy
 
             ax = axes["%d%d_m" % (i + 1, j + 1)]
@@ -1082,7 +1091,7 @@ def plot_xipm_model(
             ax.set_xlim(mmin, mmax)
             if blind:
                 ax.set_yticks([])
-            ax.axvspan(31.2, 248.0, color="gray", alpha=0.2)
+            ax.axvspan(31.2, 248.0, color=colors[-1],alpha=0.2)
             del ax, xx, yy
     return
 
@@ -1166,7 +1175,7 @@ def plot_xipm_data_model_ratio(
 
             ax.set_xlim(pmin, pmax)
             ax.set_ylim(-5.8, 5.8)
-            ax.axvspan(7.0, 58.0, color="gray", alpha=0.2)
+            ax.axvspan(7.13, 56.52,color=colors[-1],alpha=0.2)
             if blind:
                 ax.set_yticks([])
             del xx, yy, ymod, msk, dd, ax, mod
@@ -1198,7 +1207,7 @@ def plot_xipm_data_model_ratio(
             )
             ax.set_xlim(mmin, mmax)
             ax.set_ylim(-5.8, 5.8)
-            ax.axvspan(31.2, 248.0, color="gray", alpha=0.2)
+            ax.axvspan(31.2, 247.,color=colors[-1],alpha=0.2)
             if blind:
                 ax.set_yticks([])
             del ax, xx, yy, ymod, dd, mod, msk

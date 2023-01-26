@@ -53,7 +53,7 @@ def pvalue_of_chi2(chi2, dof, hartlap_nsim=1404, hartlap_ndata=140):
     return p
 
 
-def read_cosmosis_chain(infname, flip_dz=True):
+def read_cosmosis_chain(infname, flip_dz=True, as_correction=True):
     """Reads the chain output of cosmosis
 
     Args:
@@ -97,6 +97,9 @@ def read_cosmosis_chain(infname, flip_dz=True):
                 out[inm] = -1 * out[inm]
             else:
                 break
+
+    if as_correction:
+        out["weight"] = out["weight"] * out["sigma_8"] / out["a_s"]
     return out
 
 
@@ -141,7 +144,7 @@ def estimate_parameters_from_chain(infname, ptype="map", do_write=True):
     Returns:
         max_post (dict):    maximum a posterior
     """
-    chain = read_cosmosis_chain(infname, flip_dz=False)
+    chain = read_cosmosis_chain(infname, flip_dz=False, as_correction=True)
 
     outfname = infname[:-4] + "_%s.ini" % ptype
     names = list(chain.dtype.names)
