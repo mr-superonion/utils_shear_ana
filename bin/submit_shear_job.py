@@ -16,6 +16,7 @@ script = """
 %s
 
 export VAR=value
+source shear_config
 
 cd %s
 
@@ -26,7 +27,6 @@ echo "TASK ends at:"
 date
 """
 
-# source ./shear_config
 
 
 def submit_job(inifile, queue):
