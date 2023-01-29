@@ -22,7 +22,7 @@ from chainconsumer import ChainConsumer
 
 from cosmosis.output.text_output import TextColumnOutput
 
-wmap13Dict = {
+wmap9Dict = {
     "omega_m": 0.279,
     "omega_b": 0.046,
     "sigma_8": 0.82,
@@ -99,7 +99,10 @@ def read_cosmosis_chain(infname, flip_dz=True, as_correction=True):
                 break
 
     if as_correction:
-        out["weight"] = out["weight"] * out["sigma_8"] / out["a_s"]
+        if "lnAs" in infname:
+            out["weight"] = out["weight"] * out["sigma_8"]
+        else:
+            out["weight"] = out["weight"] * out["sigma_8"] / out["a_s"]
     return out
 
 

@@ -22,6 +22,8 @@ import astropy.io.fits as pyfits
 import matplotlib.lines as mlines
 from matplotlib.colors import SymLogNorm
 from chainconsumer import ChainConsumer
+from nestcheck import data_processing, plots
+from cosmosis.output.text_output import TextColumnOutput
 
 from . import chainutil
 from .datvutil import Interp1d
@@ -29,7 +31,7 @@ from .datvutil import Interp1d
 from matplotlib.ticker import Locator
 
 # some default setups
-kde0 = 2.
+kde0 = 2.0
 stat0 = "max"
 
 
@@ -107,7 +109,7 @@ latexDict = {
 
 rangeDict = {
     "ombh2": [0.02, 0.025],
-    "a_s": [0.6e-9, 10e-9],
+    "a_s": [0.0e-9, 20e-9],
     "n_s": [0.87, 1.07],
     "h0": [0.62, 0.80],
     "a_bary": [2.0, 3.13],
@@ -669,7 +671,8 @@ def plot_chain_corner(clist,
     nlist,
     truth=None,
     scale=2.5,
-    stat_method = stat0
+    stat_method = stat0,
+    kde = kde0,
     ):
     """Makes the corner plots for posteriors
 
@@ -679,6 +682,7 @@ def plot_chain_corner(clist,
         blind_by (str):     whether to blind_by the reaults
         nlist (list):       a list of parameters
         truth (list):       a list of truth parameters
+        kde (float):        kernal density esitamte
     Returns:
         fig (figure):       figure
     """
@@ -705,7 +709,7 @@ def plot_chain_corner(clist,
             weights=oo["weight"],
             parameters=[latexDict[nn] for nn in nlistb],
             posterior=oo["post"],
-            kde=kde0,
+            kde=kde,
             statistics=stat_method,
             plot_point=False,
         )
@@ -730,12 +734,19 @@ def plot_chain_corner(clist,
             weights=oo["weight"],
             parameters=[latexDict[nn] for nn in nlist2],
             posterior=oo["post"],
-            kde=kde0,
+            kde=kde,
             name=chain_name,
             statistics=stat_method,
             plot_point=False,
         )
         del ll, ll2, nlist2
+
+    if len(cnlist) <= 5:
+        fontsize = 20
+        ncol = 1
+    else:
+        fontsize = 18
+        ncol = 2
     c.configure(
         global_point=False,
         shade=False,
@@ -748,7 +759,12 @@ def plot_chain_corner(clist,
         max_ticks=3,
         sigmas=sigmas,
         summary=True,
-        legend_kwargs={"loc": "lower right", "fontsize": 20},
+        legend_kwargs={
+            "loc": "lower right",
+            "fontsize": fontsize,
+            "ncol": ncol,
+            "columnspacing": 0.2,
+            },
     )
     stat = np.atleast_1d(c.analysis.get_summary())
     lnlist = [latexDict[nn] for nn in nlist]
@@ -822,7 +838,7 @@ def get_summary_lims(stat, pnlist, clist):
 
 def plot_chain_summary(
     clist, cnlist, blind_by="fiducial", pnlist=["omega_m", "sigma_8", "s_8"],
-    nstat=1, stat_method=stat0,
+    nstat=1, stat_method=stat0, kde=kde0,
 ):
     """Plots the summary for a list of chains
 
@@ -832,6 +848,7 @@ def plot_chain_summary(
         blind_by (str):     whether to blind_by the reaults
         pnlist (list):      parameter list
         nstat (int):        number of statistics [MEAN and MAP]
+        kde (float):        kernal density esitamte
     Return:
         fig (figure):       mpl figure
     """
@@ -851,7 +868,7 @@ def plot_chain_summary(
             weights=oo["weight"],
             parameters=[latexDict[nn] for nn in pnlist],
             posterior=oo["post"],
-            kde=kde0,
+            kde=kde,
             statistics=stat_method,
         )
         stat = c.analysis.get_summary()
@@ -867,7 +884,7 @@ def plot_chain_summary(
             weights=oo["weight"],
             parameters=[latexDict[nn] for nn in pnlist],
             posterior=oo["post"],
-            kde=kde0,
+            kde=kde,
         )
     c.configure(global_point=False, statistics=stat_method)
     stat = np.atleast_1d(c.analysis.get_summary())
@@ -887,7 +904,7 @@ def plot_chain_summary(
         raise ValueError("nstat can only be 1 or 2.")
 
     fig, axes = plt.subplots(
-        1, npar, sharey=True, figsize=((npar + 1) * 2, nchain // 2),
+        1, npar, sharey=True, figsize=((npar + 1) * 2, nchain // 2 + 1),
     )
     lower0 = None
     upper0 = None
@@ -919,7 +936,8 @@ def plot_chain_summary(
     plt.ylim(-0.5, nchain - 0.5)
     plt.yticks(range(nchain), cnlist)
     plt.gca().invert_yaxis()
-    plt.subplots_adjust(wspace=0.1, hspace=0)
+    #plt.subplots_adjust(wspace=0.1, hspace=0.2)
+    plt.subplots_adjust(wspace=0.12, hspace=0.0, top=0.8, bottom=0.2)
     return fig
 
 
@@ -955,7 +973,7 @@ def plot_pvalue_list(plist, nlist):
 
 
 def plot_xipm_data(fname, axes, marker=".", color=colors0[0], nzs=4):
-    """Makes cornor plots for xip and xim from cosmosis data file [fits]
+    """Makes corner plots for xip and xim from cosmosis data file [fits]
 
     Args:
         fname (str):    a fits file name
@@ -1213,3 +1231,31 @@ def plot_xipm_data_model_ratio(
             del ax, xx, yy, ymod, dd, mod, msk
             ic += 1
     return
+
+def nestcheck_plot(infname, n_simulate=100, blind=False):
+    """Plots nestcheck
+    """
+    output_info = TextColumnOutput.load_from_options({"filename": infname})
+    colnames, data, metadata, _, final_meta = output_info
+    names_all = [nn.split('--')[-1].lower() for nn in colnames]
+    def get_i(name):
+        return np.where(np.array(names_all) == name)[0][0]
+    # Nest check
+    names = ['omega_m', 'sigma_8', 's_8']
+    fthetas = [eval('lambda x: x[:,%d]' % get_i(name)) for name in names]
+    file_root = metadata[0]['polychord_outfile_root']
+    base_dir = os.path.join(metadata[0]['workdir'], metadata[0]['base_dir'])
+    run = data_processing.process_polychord_run( file_root, base_dir)
+    labels = [latexDict[nn] for nn in names]
+    fig = plots.param_logx_diagram(
+        run,
+        fthetas=fthetas,
+        ftheta_lims=([0.05,0.5], [0.2, 1.2], [0.4, 1.0]),
+        logx_min=-32,
+        labels = labels,
+        n_simulate=n_simulate,
+    )
+    if blind:
+        for ii in [2,4,6]:
+            fig.axes[ii].set_yticklabels([])
+    return fig
