@@ -717,7 +717,6 @@ def plot_chain_corner(
         )
         stat = c.analysis.get_summary()
         avel = np.array([stat[latexDict[ni]][1] for ni in nlistb])
-        print(avel)
         del c, oo, stat
     else:
         avel = np.array([0] * len(nlistb))
@@ -815,8 +814,6 @@ def get_summary_extents(stat, pnlist, clist, scale=1.0, blind_shift=None):
     exts = [[ecen[i] - edd[i] * scale, ecen[i] + edd[i] * scale] for i in range(npar)]
     for ie, ee in enumerate(exts):
         nn = pnlist[ie]
-        print(nn)
-        print(blind_shift[ie])
         if nn in rangeDict.keys():
             if nn in nlistb:
                 low = rangeDict[nn][0] - blind_shift[nlistb.index(nn)]
