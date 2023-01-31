@@ -20,7 +20,7 @@ def main(datname, sampler, sid, inds, num):
     os.makedirs("outputs", exist_ok=True)
     os.makedirs("stdout", exist_ok=True)
     os.makedirs("configs", exist_ok=True)
-    psfname = "cat%s" %datname[3]
+    psfname = "cat%s" % datname[3]
 
     # data or simulation
     is_data = datname in ["cat0", "cat1", "cat2"]

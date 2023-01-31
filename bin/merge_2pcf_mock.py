@@ -40,7 +40,7 @@ class Worker(object):
             print(
                 "Do not have all the simulations for ",
                 "isim: %d, irot: %d, field: %s" % (isim, irot, self.fieldname),
-                "under %s" %(self.corDir),
+                "under %s" % (self.corDir),
             )
             return
 

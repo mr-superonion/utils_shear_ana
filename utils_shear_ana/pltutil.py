@@ -36,7 +36,7 @@ stat0 = "max"
 
 
 chain_labels_dict = {
-    "fiducial": "fiducial",
+    "fid": "fid",
     "theta1": "include smaller scales",
     "theta2": "include larger scales",
     "theta3": r"$\theta_+<23'.3$, $\theta_-<102'$",
@@ -665,15 +665,16 @@ def plot_cov_coeff(covIn):
     return fig
 
 
-def plot_chain_corner(clist,
+def plot_chain_corner(
+    clist,
     cnlist,
     blind_by,
     nlist,
     truth=None,
     scale=2.5,
-    stat_method = stat0,
-    kde = kde0,
-    ):
+    stat_method=stat0,
+    kde=kde0,
+):
     """Makes the corner plots for posteriors
 
     Args:
@@ -696,7 +697,8 @@ def plot_chain_corner(clist,
         raise ValueError("scale need to be greater than 1.05 and smaller than 10")
 
     npar = len(nlist)
-    nlistb = ["s_8", "omega_m", "sigma_8"]
+    # list of blinded parameters
+    nlistb = ["s_8", "omega_m", "sigma_8", "a_s"]
     if blind_by is not None:
         assert (
             blind_by in cnlist
@@ -764,7 +766,7 @@ def plot_chain_corner(clist,
             "fontsize": fontsize,
             "ncol": ncol,
             "columnspacing": 0.2,
-            },
+        },
     )
     stat = np.atleast_1d(c.analysis.get_summary())
     lnlist = [latexDict[nn] for nn in nlist]
@@ -837,8 +839,13 @@ def get_summary_lims(stat, pnlist, clist):
 
 
 def plot_chain_summary(
-    clist, cnlist, blind_by="fiducial", pnlist=["omega_m", "sigma_8", "s_8"],
-    nstat=1, stat_method=stat0, kde=kde0,
+    clist,
+    cnlist,
+    blind_by="fid",
+    pnlist=None,
+    nstat=1,
+    stat_method=stat0,
+    kde=kde0,
 ):
     """Plots the summary for a list of chains
 
@@ -854,6 +861,8 @@ def plot_chain_summary(
     """
     fmts = ["o", "d"]
     alphas = [1.0, 1.0]
+    if pnlist is None:
+        pnlist = ["omega_m", "sigma_8", "s_8"]
     npar = len(pnlist)
     nchain = len(clist)
     if blind_by is not None:
@@ -904,7 +913,10 @@ def plot_chain_summary(
         raise ValueError("nstat can only be 1 or 2.")
 
     fig, axes = plt.subplots(
-        1, npar, sharey=True, figsize=((npar + 1) * 2, nchain // 2 + 1),
+        1,
+        npar,
+        sharey=True,
+        figsize=((npar + 1) * 2, nchain // 2 + 1),
     )
     lower0 = None
     upper0 = None
@@ -929,14 +941,14 @@ def plot_chain_summary(
                     color=colors[0],
                 )
             if h == 0:
-                axes[j].tick_params(axis='both', which='major', labelsize=14)
+                axes[j].tick_params(axis="both", which="major", labelsize=14)
                 axes[j].axvspan(lower0, upper0, color="gray", alpha=0.2)
                 axes[j].set_title(latexDict[pnlist[j]], fontsize=20)
                 axes[j].set_xlim(extent[j])
     plt.ylim(-0.5, nchain - 0.5)
     plt.yticks(range(nchain), cnlist)
     plt.gca().invert_yaxis()
-    #plt.subplots_adjust(wspace=0.1, hspace=0.2)
+    # plt.subplots_adjust(wspace=0.1, hspace=0.2)
     plt.subplots_adjust(wspace=0.12, hspace=0.0, top=0.8, bottom=0.2)
     return fig
 
@@ -1083,7 +1095,7 @@ def plot_xipm_model(
             ax.set_xlim(pmin, pmax)
             if blind:
                 ax.set_yticks([])
-            ax.axvspan(7.13, 56.52,color=colors[-1],alpha=0.2)
+            ax.axvspan(7.13, 56.52, color=colors[-1], alpha=0.2)
             del ax, xx, yy
 
             ax = axes["%d%d_m" % (i + 1, j + 1)]
@@ -1109,7 +1121,7 @@ def plot_xipm_model(
             ax.set_xlim(mmin, mmax)
             if blind:
                 ax.set_yticks([])
-            ax.axvspan(31.2, 248.0, color=colors[-1],alpha=0.2)
+            ax.axvspan(31.2, 248.0, color=colors[-1], alpha=0.2)
             del ax, xx, yy
     return
 
@@ -1193,7 +1205,7 @@ def plot_xipm_data_model_ratio(
 
             ax.set_xlim(pmin, pmax)
             ax.set_ylim(-5.8, 5.8)
-            ax.axvspan(7.13, 56.52,color=colors[-1],alpha=0.2)
+            ax.axvspan(7.13, 56.52, color=colors[-1], alpha=0.2)
             if blind:
                 ax.set_yticks([])
             del xx, yy, ymod, msk, dd, ax, mod
@@ -1225,37 +1237,39 @@ def plot_xipm_data_model_ratio(
             )
             ax.set_xlim(mmin, mmax)
             ax.set_ylim(-5.8, 5.8)
-            ax.axvspan(31.2, 247.,color=colors[-1],alpha=0.2)
+            ax.axvspan(31.2, 247.0, color=colors[-1], alpha=0.2)
             if blind:
                 ax.set_yticks([])
             del ax, xx, yy, ymod, dd, mod, msk
             ic += 1
     return
 
+
 def nestcheck_plot(infname, n_simulate=100, blind=False):
-    """Plots nestcheck
-    """
+    """Plots nestcheck"""
     output_info = TextColumnOutput.load_from_options({"filename": infname})
     colnames, data, metadata, _, final_meta = output_info
-    names_all = [nn.split('--')[-1].lower() for nn in colnames]
+    names_all = [nn.split("--")[-1].lower() for nn in colnames]
+
     def get_i(name):
         return np.where(np.array(names_all) == name)[0][0]
+
     # Nest check
-    names = ['omega_m', 'sigma_8', 's_8']
-    fthetas = [eval('lambda x: x[:,%d]' % get_i(name)) for name in names]
-    file_root = metadata[0]['polychord_outfile_root']
-    base_dir = os.path.join(metadata[0]['workdir'], metadata[0]['base_dir'])
-    run = data_processing.process_polychord_run( file_root, base_dir)
+    names = ["omega_m", "sigma_8", "s_8"]
+    fthetas = [eval("lambda x: x[:,%d]" % get_i(name)) for name in names]
+    file_root = metadata[0]["polychord_outfile_root"]
+    base_dir = os.path.join(metadata[0]["workdir"], metadata[0]["base_dir"])
+    run = data_processing.process_polychord_run(file_root, base_dir)
     labels = [latexDict[nn] for nn in names]
     fig = plots.param_logx_diagram(
         run,
         fthetas=fthetas,
-        ftheta_lims=([0.05,0.5], [0.2, 1.2], [0.4, 1.0]),
+        ftheta_lims=([0.05, 0.5], [0.2, 1.2], [0.4, 1.0]),
         logx_min=-32,
-        labels = labels,
+        labels=labels,
         n_simulate=n_simulate,
     )
     if blind:
-        for ii in [2,4,6]:
+        for ii in [2, 4, 6]:
             fig.axes[ii].set_yticklabels([])
     return fig

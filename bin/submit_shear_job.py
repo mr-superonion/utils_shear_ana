@@ -28,7 +28,6 @@ date
 """
 
 
-
 def submit_job(inifile, queue):
     jobname = inifile.split(".ini")[0].split("configs/")[-1]
     # assume to use maximum resource for each queue
@@ -51,11 +50,9 @@ def submit_job(inifile, queue):
         }[queue]
         walltime = "#PBS -l walltime=7:00:00:00"
     elif host == "fe":  # gfarm
-        nodes_ppn = {
-            "tiny": [1, 1, 1],
-            "mini": [1, 20, 20],
-            "small": [6, 20, 120]
-        }[queue]
+        nodes_ppn = {"tiny": [1, 1, 1], "mini": [1, 20, 20], "small": [6, 20, 120]}[
+            queue
+        ]
         walltime = ""
     else:
         raise ValueError("Does not support the currect server")

@@ -207,8 +207,8 @@ def transform_sys_matrix(pp_corr, psf_const1, psf_const2):
 
         sys_cor2[i, ncor_tq] = psf_const2[i]
         sys_cor2[ncor_tq, i] = psf_const2[i]
-    sys_cor1[-1,-1,:] = 1.
-    sys_cor2[-1,-1,:] = 1.
+    sys_cor1[-1, -1, :] = 1.0
+    sys_cor2[-1, -1, :] = 1.0
 
     for i in range(ncor_tq):
         for j in range(ncor_tq):

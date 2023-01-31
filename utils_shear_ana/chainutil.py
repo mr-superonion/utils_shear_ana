@@ -102,7 +102,7 @@ def read_cosmosis_chain(infname, flip_dz=True, as_correction=True):
     if has_weight:
         out = out[out["weight"] > 0]
     else:
-        out["weight"] = 1.
+        out["weight"] = 1.0
     # flip the delta_z
     if flip_dz:
         for i in range(1, 20):
