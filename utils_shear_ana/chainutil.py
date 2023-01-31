@@ -54,41 +54,55 @@ def pvalue_of_chi2(chi2, dof, hartlap_nsim=1404, hartlap_ndata=140):
 
 
 def read_cosmosis_chain(infname, flip_dz=True, as_correction=True):
-    """Reads the chain output of cosmosis
+    """Reads the chain output of cosmosis into ndarray
 
     Args:
         infname (str):          file name
     Returns:
         out (ndarray):          chain
     """
+    # use cosmosis module to read the output
     try:
         output_info = TextColumnOutput.load_from_options({"filename": infname})
-    except:
+    except IOError:
         raise IOError("Cannot read file: %s" % infname)
     colnames, data, metadata, _, final_meta = output_info
     metadata = metadata[0]
     final_meta = final_meta[0]
     metadata.update(final_meta)
+
+    # data
     data = data[0]
     nsample, npar = data.shape
     # assert nsample==metadata['nsample']
+
+    # initialize dtypes
+    # column names
     colnames = [c.lower().split("--")[-1] for c in colnames]
     types = list(set([tp for tp in zip(colnames, [">f8"] * npar)]))
     cal_s8 = False
     if ("s_8" not in colnames) and ("omega_m" in colnames) and ("sigma_8" in colnames):
         types.append(("s_8", ">f8"))
         cal_s8 = True
+    if "weight" not in colnames:
+        types.append(("weight", ">f8"))
+        has_weight = False
+    else:
+        has_weight = True
+
+    # initialize ndarray
     out = np.empty(nsample, dtype=types)
     for nm in colnames:
         out[nm] = data.T[colnames.index(nm)]
-
-    assert out.dtype.names is not None
-    if "weight" in out.dtype.names:
-        out = out[out["weight"] > 0]
     if cal_s8:
         alpha = 0.5
         out["s_8"] = out["sigma_8"] * (out["omega_m"] / 0.3) ** alpha
 
+    # pre processing
+    if has_weight:
+        out = out[out["weight"] > 0]
+    else:
+        out["weight"] = 1.
     # flip the delta_z
     if flip_dz:
         for i in range(1, 20):
@@ -97,7 +111,6 @@ def read_cosmosis_chain(infname, flip_dz=True, as_correction=True):
                 out[inm] = -1 * out[inm]
             else:
                 break
-
     if as_correction:
         if "lnAs" in infname:
             out["weight"] = out["weight"] * out["sigma_8"]
