@@ -58,8 +58,11 @@ def read_cosmosis_chain(infname, flip_dz=True, as_correction=True):
 
     Args:
         infname (str):          file name
+        flip_dz (bool):         whether to flip sign of dz in cosmosis
+        as_correction (bool):   whether to add correction factor for sampling
+                                on A_s or lnAs
     Returns:
-        out (ndarray):          chain
+        out (ndarray):          an array of chain
     """
     # use cosmosis module to read the output
     try:
@@ -91,7 +94,7 @@ def read_cosmosis_chain(infname, flip_dz=True, as_correction=True):
         has_weight = True
 
     # initialize ndarray
-    out = np.empty(nsample, dtype=types)
+    out = np.zeros(nsample, dtype=types)
     for nm in colnames:
         out[nm] = data.T[colnames.index(nm)]
     if cal_s8:
@@ -103,6 +106,11 @@ def read_cosmosis_chain(infname, flip_dz=True, as_correction=True):
         out = out[out["weight"] > 0]
     else:
         out["weight"] = 1.0
+
+    # a_s has unit of [1e-9]
+    if "a_s" in colnames:
+        out["a_s"] = out["a_s"] * 1e9
+
     # flip the delta_z
     if flip_dz:
         for i in range(1, 20):

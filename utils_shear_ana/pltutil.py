@@ -31,8 +31,10 @@ from .datvutil import Interp1d
 from matplotlib.ticker import Locator
 
 # some default setups
-kde0 = 2.0
+kde0 = 1.5
 stat0 = "max"
+# list of blinded parameters
+nlistb = ["s_8", "omega_m", "sigma_8", "a_s"]
 
 
 chain_labels_dict = {
@@ -67,7 +69,7 @@ latexDict = {
     "ombh2": r"$\omega_{\mathrm{b}}$",
     "sigma_8": r"$\sigma_8$",
     "s_8": r"$S_8$",
-    "a_s": r"$A_s$",
+    "a_s": r"$A_s\, /\, 10^{-9}$",
     "n_s": r"$n_s$",
     "h0": r"$h_0$",
     "a": r"$A^{\mathrm{IA}}_1$",
@@ -109,7 +111,7 @@ latexDict = {
 
 rangeDict = {
     "ombh2": [0.02, 0.025],
-    "a_s": [-10.0e-9, 20e-9],
+    "a_s": [0.1, 20],
     "n_s": [0.87, 1.07],
     "h0": [0.62, 0.80],
     "a_bary": [2.0, 3.13],
@@ -697,8 +699,6 @@ def plot_chain_corner(
         raise ValueError("scale need to be greater than 1.05 and smaller than 10")
 
     npar = len(nlist)
-    # list of blinded parameters
-    nlistb = ["s_8", "omega_m", "sigma_8", "a_s"]
     if blind_by is not None:
         assert (
             blind_by in cnlist
@@ -715,11 +715,9 @@ def plot_chain_corner(
             statistics=stat_method,
             plot_point=False,
         )
-        c.configure(
-            statistics=stat_method,
-        )
         stat = c.analysis.get_summary()
         avel = np.array([stat[latexDict[ni]][1] for ni in nlistb])
+        print(avel)
         del c, oo, stat
     else:
         avel = np.array([0] * len(nlistb))
@@ -772,12 +770,12 @@ def plot_chain_corner(
     lnlist = [latexDict[nn] for nn in nlist]
     idx = np.sort(np.unique(lnlist, return_index=True)[1])
     nlist2 = [nlist[ii] for ii in idx]
-    exts = get_summary_extents(stat, nlist2, clist, scale=scale)
+    exts = get_summary_extents(stat, nlist2, clist, scale=scale, blind_shift=avel)
     fig = c.plotter.plot(figsize=1.5, extents=exts, truth=truth)
     return fig
 
 
-def get_summary_extents(stat, pnlist, clist, scale=1.0):
+def get_summary_extents(stat, pnlist, clist, scale=1.0, blind_shift=None):
     """Estimates the extent for chains used for summary plot
 
     Args:
@@ -786,7 +784,10 @@ def get_summary_extents(stat, pnlist, clist, scale=1.0):
         clist (list):       chain list [a list of ndarray]
     Returns:
         ext (list):         a list of tuples of extents for parameters
+        scale (float):      scale ratio
     """
+    if blind_shift is None:
+        blind_shift = np.zeros(len(nlistb))
     ldt = latexDict
     npar = len(pnlist)
     nchain = len(clist)
@@ -814,9 +815,17 @@ def get_summary_extents(stat, pnlist, clist, scale=1.0):
     exts = [[ecen[i] - edd[i] * scale, ecen[i] + edd[i] * scale] for i in range(npar)]
     for ie, ee in enumerate(exts):
         nn = pnlist[ie]
+        print(nn)
+        print(blind_shift[ie])
         if nn in rangeDict.keys():
-            ee[0] = max(rangeDict[nn][0], ee[0])
-            ee[1] = min(rangeDict[nn][1], ee[1])
+            if nn in nlistb:
+                low = rangeDict[nn][0] - blind_shift[nlistb.index(nn)]
+                high = rangeDict[nn][1] - blind_shift[nlistb.index(nn)]
+            else:
+                low = rangeDict[nn][0]
+                high = rangeDict[nn][1]
+            ee[0] = max(low, ee[0])
+            ee[1] = min(high, ee[1])
     return exts
 
 
@@ -865,6 +874,8 @@ def plot_chain_summary(
         pnlist = ["omega_m", "sigma_8", "s_8"]
     npar = len(pnlist)
     nchain = len(clist)
+
+    # blinding
     if blind_by is not None:
         assert (
             blind_by in cnlist
@@ -873,28 +884,39 @@ def plot_chain_summary(
         c = ChainConsumer()
         oo = clist[cnlist.index(blind_by)]
         c.add_chain(
-            [oo[pnlist[ii]] for ii in range(npar)],
+            [oo[ni] for ni in nlistb],
             weights=oo["weight"],
-            parameters=[latexDict[nn] for nn in pnlist],
+            parameters=[latexDict[nn] for nn in nlistb],
             posterior=oo["post"],
             kde=kde,
             statistics=stat_method,
+            plot_point=False,
         )
         stat = c.analysis.get_summary()
-        avel = [stat[latexDict[pnlist[i]]][1] for i in range(npar)]
+        avel = np.array([stat[latexDict[ni]][1] for ni in nlistb])
         del c, oo, stat
     else:
-        avel = [0] * npar
+        avel = np.array([0] * len(nlistb))
 
     c = ChainConsumer()
-    for i, oo in enumerate(clist):
+    for ii, oo in enumerate(clist):
+        # blind sigma_8 and omega_m
+        chain_name = cnlist[ii]
+        nlist2 = [nn for nn in pnlist if nn in oo.dtype.names]
+        ll = [oo[nn] - avel[nlistb.index(nn)] for nn in nlist2 if nn in nlistb]
+        ll2 = [oo[nn] for nn in nlist2 if nn not in nlistb]
         c.add_chain(
-            [oo[pnlist[ii]] - avel[ii] for ii in range(npar)],
+            ll + ll2,
             weights=oo["weight"],
-            parameters=[latexDict[nn] for nn in pnlist],
+            parameters=[latexDict[nn] for nn in nlist2],
             posterior=oo["post"],
             kde=kde,
+            name=chain_name,
+            statistics=stat_method,
+            plot_point=False,
         )
+        del ll, ll2, nlist2
+
     c.configure(global_point=False, statistics=stat_method)
     stat = np.atleast_1d(c.analysis.get_summary())
     parlims = get_summary_lims(stat, pnlist, clist)
