@@ -169,15 +169,14 @@ def estimate_parameters_from_chain(infname, ptype="map", do_write=True):
         max_post (dict):    maximum a posterior
     """
     chain = read_cosmosis_chain(infname, flip_dz=False, as_correction=True)
-
+    chain["omega_m"] = 0.279
+    chain["a_s"] = 2.1841e-9
     outfname = infname[:-4] + "_%s.ini" % ptype
     names = list(chain.dtype.names)
-
     # remove those derived parameters
     if ptype != "map":
         for nn in ["prior", "like", "post", "weight"]:
             names.remove(nn)
-
     c = ChainConsumer()
     c.add_chain(
         [chain[nn] for nn in names],

@@ -107,6 +107,10 @@ latexDict = {
     "m4": r"$\Delta{m}_4$",
     "logt_agn": r"$\Theta_{\mathrm{AGN}}$",
     "a_bary": r"$A_{\mathrm{bary}}$",
+    "psf_alpha2": r"$\alpha^{(2)}$",
+    "psf_beta2": r"$\beta^{(2)}$",
+    "psf_alpha4": r"$\alpha^{(4)}$",
+    "psf_beta4": r"$\beta^{(4)}$",
 }
 
 rangeDict = {
@@ -201,7 +205,6 @@ colors0 = [
 ]
 
 cblue = ["#004c6d", "#346888", "#5886a5", "#7aa6c2", "#9dc6e0", "#c1e7ff"]
-
 cred = ["#DC1C13", "#EA4C46", "#F07470", "#F1959B", "#F6BDC0", "#F8D8E3"]
 
 
@@ -441,7 +444,7 @@ def make_tpcf_plot(title="xi", nzs=4):
         label2 = r"$\delta{\xi_{-}}/\sigma_{-}$"
     else:
         raise ValueError("title should be xi, thetaxi, thetaEB, ratio or ratio2")
-
+    labelsize = 20
     # -----xip---starts
     for i in range(nzs):
         for j in range(i, nzs):
@@ -486,7 +489,7 @@ def make_tpcf_plot(title="xi", nzs=4):
                 else:
                     ax.set_yticks((1e-6, 1e-5, 1e-4, 1e-3))
                 if j == nzs - 1 and i == 2:
-                    ax.set_ylabel(label1)
+                    ax.set_ylabel(label1, fontsize=labelsize)
             elif title == "thetaxi":
                 ax.set_ylim(-1, (i + 2) * 2 + 1.8)
                 rr = np.arange(0, (i + 2) * 2 + 0.1, 2)
@@ -496,7 +499,7 @@ def make_tpcf_plot(title="xi", nzs=4):
                 else:
                     ax.set_yticks(rr)
                 if j == nzs - 1 and i == 2:
-                    ax.set_ylabel(label1)
+                    ax.set_ylabel(label1, fontsize=labelsize)
             elif title == "thetaEB":
                 ax.set_ylim(-1, (i + 2) * 2 + 1.8)
                 rr = np.arange(0, (i + 2) * 2 + 0.1, 2)
@@ -506,14 +509,14 @@ def make_tpcf_plot(title="xi", nzs=4):
                 else:
                     ax.set_yticks(rr)
                 if j == nzs - 1 and i == 2:
-                    ax.set_ylabel(label1)
+                    ax.set_ylabel(label1, fontsize=labelsize)
             elif title in ["ratio", "ratio2"]:
                 if j != nzs - 1:
                     ax.set_yticklabels([])
                 else:
                     pass
                 if j == nzs - 1 and i == 2:
-                    ax.set_ylabel(label1)
+                    ax.set_ylabel(label1, fontsize=labelsize)
             else:
                 raise ValueError(
                     "title should be xi, thetaxi, thetaEB, ratio or ratio2"
@@ -521,8 +524,8 @@ def make_tpcf_plot(title="xi", nzs=4):
             ax.patch.set_alpha(0.1)
             ax.tick_params(
                 direction="out",
-                length=4,
-                width=1.0,
+                length=8,
+                width=1.5,
                 colors="black",
                 grid_color="gray",
                 grid_alpha=0.6,
@@ -576,7 +579,7 @@ def make_tpcf_plot(title="xi", nzs=4):
                 else:
                     ax.set_yticks((1e-6, 1e-5, 1e-4, 1e-3))
                 if i == 2 and j == 3:
-                    ax.set_ylabel(label2)
+                    ax.set_ylabel(label2, fontsize=labelsize)
             elif title == "thetaxi":
                 ax.set_ylim(-1, (i + 1) * 2 + 1.8)
                 rr = np.arange(0, (i + 1) * 2 + 0.1, 2)
@@ -586,7 +589,7 @@ def make_tpcf_plot(title="xi", nzs=4):
                 else:
                     ax.set_yticks(rr)
                 if i == 2 and j == 3:
-                    ax.set_ylabel(label2)
+                    ax.set_ylabel(label2, fontsize=labelsize)
             elif title == "thetaEB":
                 ax.set_ylim(-1, (i + 1) * 2 + 1.8)
                 rr = np.arange(0, (i + 1) * 2 + 0.1, 2)
@@ -596,21 +599,21 @@ def make_tpcf_plot(title="xi", nzs=4):
                 else:
                     pass
                 if i == 2 and j == 3:
-                    ax.set_ylabel(label2)
+                    ax.set_ylabel(label2, fontsize=labelsize)
             elif title in ["ratio", "ratio2"]:
                 if j != nzs - 1:
                     ax.set_yticklabels([])
                 else:
                     pass
                 if i == 2 and j == 3:
-                    ax.set_ylabel(label2)
+                    ax.set_ylabel(label2, fontsize=labelsize)
             else:
                 raise ValueError("title should be xi, thetaxi or ratio")
             ax.patch.set_alpha(0.1)
             ax.tick_params(
                 direction="out",
-                length=5,
-                width=1.0,
+                length=8,
+                width=1.5,
                 colors="black",
                 grid_color="gray",
                 grid_alpha=0.9,
@@ -659,7 +662,7 @@ def plot_cov_coeff(covIn):
     """
     fig, axes = make_figure_axes(nx=1, ny=1)
     ax = axes[0]
-    im = ax.imshow(covIn, cmap="bwr", vmin=-1, vmax=1, origin="lower", aspect="auto")
+    im = ax.imshow(covIn, cmap="coolwarm_r", vmin=-1, vmax=1, origin="lower", aspect="auto")
     fig.colorbar(im)
     ny, nx = covIn.shape
     ax.set_xticks(np.arange(0, nx + 1, 30))
@@ -759,7 +762,7 @@ def plot_chain_corner(
         sigmas=sigmas,
         summary=True,
         legend_kwargs={
-            "loc": "lower right",
+            "loc": "lower center",
             "fontsize": fontsize,
             "ncol": ncol,
             "columnspacing": 0.2,
@@ -770,7 +773,8 @@ def plot_chain_corner(
     idx = np.sort(np.unique(lnlist, return_index=True)[1])
     nlist2 = [nlist[ii] for ii in idx]
     exts = get_summary_extents(stat, nlist2, clist, scale=scale, blind_shift=avel)
-    fig = c.plotter.plot(figsize=1.5, extents=exts, truth=truth)
+    fig = c.plotter.plot(figsize=2., extents=exts, truth=truth)
+    fig.subplots_adjust(bottom=0.2, left=0.2)
     return fig
 
 
@@ -960,15 +964,21 @@ def plot_chain_summary(
                     color=colors[0],
                 )
             if h == 0:
-                axes[j].tick_params(axis="both", which="major", labelsize=14)
+                axes[j].tick_params(axis="both", which="major", labelsize=16)
                 axes[j].axvspan(lower0, upper0, color="gray", alpha=0.2)
                 axes[j].set_title(latexDict[pnlist[j]], fontsize=20)
                 axes[j].set_xlim(extent[j])
+    axes[0].tick_params(axis='y', which='major', pad=10)
     plt.ylim(-0.5, nchain - 0.5)
     plt.yticks(range(nchain), cnlist)
     plt.gca().invert_yaxis()
-    # plt.subplots_adjust(wspace=0.1, hspace=0.2)
-    plt.subplots_adjust(wspace=0.12, hspace=0.0, top=0.8, bottom=0.2)
+    plt.subplots_adjust(
+        wspace=0.12,
+        hspace=0.0,
+        top=0.8,
+        bottom=0.2,
+        left = 0.20,
+    )
     return fig
 
 
@@ -1003,7 +1013,7 @@ def plot_pvalue_list(plist, nlist):
     return fig
 
 
-def plot_xipm_data(fname, axes, marker=".", color=colors0[0], nzs=4):
+def plot_xipm_data(fname, axes, marker="x", color=colors0[0], nzs=4):
     """Makes corner plots for xip and xim from cosmosis data file [fits]
 
     Args:
@@ -1038,7 +1048,8 @@ def plot_xipm_data(fname, axes, marker=".", color=colors0[0], nzs=4):
             yy = dd["value"] * xx * 1e4
             yerr = err_xip[ic] * xx * 1e4
             ax.errorbar(
-                xx, yy, yerr, marker=marker, linestyle="", color=color, linewidth=1.0
+                xx, yy, yerr, marker=marker, linestyle="", color=color,
+                markersize=4.0,
             )
             del xx, yy, msk, dd
             # ---
@@ -1051,7 +1062,8 @@ def plot_xipm_data(fname, axes, marker=".", color=colors0[0], nzs=4):
             yy = dd["value"] * xx * 1e4
             yerr = err_xim[ic] * xx * 1e4
             ax.errorbar(
-                xx, yy, yerr, marker=marker, linestyle="", color=color, linewidth=1.0
+                xx, yy, yerr, marker=marker, linestyle="", color=color,
+                markersize=4.0,
             )
             del xx, yy, dd
             ic += 1
@@ -1264,31 +1276,59 @@ def plot_xipm_data_model_ratio(
     return
 
 
-def nestcheck_plot(infname, n_simulate=100, blind=False):
-    """Plots nestcheck"""
+def nestcheck_plot(infname, n_simulate=100, blind=False, s8_only=False):
+    """Plots nestcheck
+
+    Args:
+        infname (str):      input file name
+        n_simulate (int):   number of simulations
+        blind (bool):       whether blind values
+        s8_only (bool):     whether only plot s8
+    Returns:
+        fig (figure):       matplotlib figure
+    """
     output_info = TextColumnOutput.load_from_options({"filename": infname})
     colnames, data, metadata, _, final_meta = output_info
     names_all = [nn.split("--")[-1].lower() for nn in colnames]
-
-    def get_i(name):
+    def get_id(name):
         return np.where(np.array(names_all) == name)[0][0]
 
-    # Nest check
-    names = ["omega_m", "sigma_8", "s_8"]
-    fthetas = [eval("lambda x: x[:,%d]" % get_i(name)) for name in names]
     file_root = metadata[0]["polychord_outfile_root"]
     base_dir = os.path.join(metadata[0]["workdir"], metadata[0]["base_dir"])
     run = data_processing.process_polychord_run(file_root, base_dir)
-    labels = [latexDict[nn] for nn in names]
-    fig = plots.param_logx_diagram(
-        run,
-        fthetas=fthetas,
-        ftheta_lims=([0.05, 0.5], [0.2, 1.2], [0.4, 1.0]),
-        logx_min=-32,
-        labels=labels,
-        n_simulate=n_simulate,
-    )
-    if blind:
-        for ii in [2, 4, 6]:
-            fig.axes[ii].set_yticklabels([])
+    # Nest check
+    if not s8_only:
+        names = ["omega_m", "sigma_8", "s_8"]
+        fthetas = [eval("lambda x: x[:,%d]" % get_id(name)) for name in names]
+        labels = [latexDict[nn] for nn in names]
+        fig = plots.param_logx_diagram(
+            run,
+            fthetas=fthetas,
+            ftheta_lims=[[0.05, 0.5], [0.2, 1.2], [0.4, 1.0]],
+            logx_min=-30,
+            labels=labels,
+            n_simulate=n_simulate,
+            colors=cblue,
+            colormaps = ['Blues_r']
+        )
+        if blind:
+            for ii in [2, 4, 6]:
+                fig.axes[ii].set_yticklabels([])
+    else:
+        names = ["s_8"]
+        fthetas = [eval("lambda x: x[:,%d]" % get_id(name)) for name in names]
+        labels = [latexDict[nn] for nn in names]
+        fig = plots.param_logx_diagram(
+            run,
+            fthetas=fthetas,
+            ftheta_lims=[[0.4, 1.0]],
+            logx_min=-30,
+            labels=labels,
+            n_simulate=n_simulate,
+            colors=cblue,
+            colormaps = ['Blues_r']
+        )
+        if blind:
+            for ii in [2]:
+                fig.axes[ii].set_yticklabels([])
     return fig

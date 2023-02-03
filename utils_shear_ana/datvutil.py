@@ -481,7 +481,8 @@ def make_cosmosis_tpcf_hdulist_data(corAll, mskAll, covmat, nzs=nzsDF):
 
     Args:
         corAll (list):      list of correlations
-        covmat (ndarray):    covariance matrix
+        mskAll (ndarray):   mask array
+        covmat (ndarray):   covariance matrix
     Returns:
         the hdulist of the data and covariance
     """
