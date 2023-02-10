@@ -216,7 +216,12 @@ def estimate_parameters_from_chain(infname, ptype="map",
                     nn = tmp.split(" = ")[0]
                     if nn in names:
                         # write the estimated parameter to the string
-                        tmp = "%s = %.6E\n" % (nn, max_post[nn])
+                        if nn == "a_s":
+                            # the a_s in chain is scaled to by 1e9 !
+                            # here, we rescaled it back
+                            tmp = "%s = %.6E\n" % (nn, max_post[nn]/1e9)
+                        else:
+                            tmp = "%s = %.6E\n" % (nn, max_post[nn])
                         npar_write += 1
                     lines.append(tmp)
                 if end:
