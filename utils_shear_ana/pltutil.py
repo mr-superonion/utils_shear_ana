@@ -679,6 +679,7 @@ def plot_chain_corner(
     scale=2.5,
     stat_method=stat0,
     kde=kde0,
+    plot_hists=True,
 ):
     """Makes the corner plots for posteriors
 
@@ -689,6 +690,7 @@ def plot_chain_corner(
         nlist (list):       a list of parameters
         truth (list):       a list of truth parameters
         kde (float):        kernal density esitamte
+        plot_hists(bool):   whether ploting 1D histogram
     Returns:
         fig (figure):       figure
     """
@@ -752,6 +754,7 @@ def plot_chain_corner(
     c.configure(
         global_point=False,
         shade=False,
+        plot_hists=plot_hists,
         flip=False,
         bar_shade=True,
         statistics=stat_method,

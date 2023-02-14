@@ -159,7 +159,7 @@ def read_cosmosis_max(infname):
 
 
 def estimate_parameters_from_chain(infname, ptype="map",
-        blind=True, do_write=True):
+        blind=True, do_write=True, params_dict=None):
     """Estimate the parameters and write it to file
 
     Args:
@@ -171,13 +171,21 @@ def estimate_parameters_from_chain(infname, ptype="map",
         max_post (dict):    maximum a posterior
     """
     chain = read_cosmosis_chain(infname, flip_dz=False, as_correction=True)
+    # change the parameters in the param_dict
+    if params_dict is not None:
+        for par in params_dict.keys():
+            chain[par] = params_dict[par]
+        pname = 'changed'
+    else:
+        pname = ''
     if blind:
         # use wmap9 cosmology to blind the output
         chain["omega_m"] = wmap9Dict["omega_m"]
         chain["a_s"] = wmap9Dict["a_s"]
-        outfname = infname[:-4] + "_%s_blinded.ini" % ptype
+        outfname = infname[:-4] + "_%s_blinded_%s.ini" % (ptype, pname)
     else:
-        outfname = infname[:-4] + "_%s.ini" % ptype
+        outfname = infname[:-4] + "_%s_%s.ini" % (ptype, pname)
+
     names = list(chain.dtype.names)
     # remove those derived parameters
     if ptype != "map":
