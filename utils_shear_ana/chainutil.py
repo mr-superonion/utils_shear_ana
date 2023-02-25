@@ -110,6 +110,8 @@ def read_cosmosis_chain(infname, flip_dz=True, as_correction=True):
     # a_s has unit of [1e-9]
     if "a_s" in colnames:
         out["a_s"] = out["a_s"] * 1e9
+    if "ombh2" in colnames:
+        out["ombh2"] = out["ombh2"] * 1e3
 
     # flip the delta_z
     if flip_dz:
@@ -199,12 +201,13 @@ def estimate_parameters_from_chain(infname, ptype="map",
         posterior=chain["post"],
     )
     if ptype == "map":
-        max_post = c.analysis.get_max_posteriors()
+        out = c.analysis.get_max_posteriors()
     else:
         c.configure(
-            global_point=True,
+            global_point=False,
             statistics=ptype,
         )
+        out = c.analysis.get_summary()
         return
     if do_write:
         npar_write = 0
@@ -227,9 +230,11 @@ def estimate_parameters_from_chain(infname, ptype="map",
                         if nn == "a_s":
                             # the a_s in chain is scaled to by 1e9 !
                             # here, we rescaled it back
-                            tmp = "%s = %.6E\n" % (nn, max_post[nn]/1e9)
+                            tmp = "%s = %.6E\n" % (nn, out[nn]/1e9)
+                        elif nn=="ombh2":
+                            tmp = "%s = %.6E\n" % (nn, out[nn]/1e3)
                         else:
-                            tmp = "%s = %.6E\n" % (nn, max_post[nn])
+                            tmp = "%s = %.6E\n" % (nn, out[nn])
                         npar_write += 1
                     lines.append(tmp)
                 if end:
@@ -243,7 +248,7 @@ def estimate_parameters_from_chain(infname, ptype="map",
             something goes wrong?"
         with open(outfname, "wt") as outfile:
             outfile.write("".join(lines))
-    return max_post
+    return out
 
 
 # from getdist import MCSamples

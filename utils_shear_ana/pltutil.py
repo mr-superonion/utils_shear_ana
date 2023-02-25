@@ -38,7 +38,7 @@ nlistb = ["s_8", "omega_m", "sigma_8", "a_s"]
 
 
 chain_labels_dict = {
-    "fid": "fid",
+    "fid": "fiducial",
     "theta1": "include smaller scales",
     "theta2": "include larger scales",
     "theta3": r"$\theta_+<23'.3$, $\theta_-<102'$",
@@ -66,19 +66,21 @@ chain_labels_dict = {
 latexDict = {
     "omega_m": r"$\Omega_{\mathrm{m}}$",
     "omega_b": r"$\Omega_{\mathrm{b}}$",
-    "ombh2": r"$\omega_{\mathrm{b}}$",
+    "ombh2": r"$\omega_{\mathrm{b}}/10^{-3}$",
     "sigma_8": r"$\sigma_8$",
     "s_8": r"$S_8$",
     "a_s": r"$A_s\, /\, 10^{-9}$",
     "n_s": r"$n_s$",
     "h0": r"$h_0$",
-    "a": r"$A^{\mathrm{IA}}_1$",
-    "a1": r"$A^{\mathrm{IA}}_1$",
-    "a2": r"$A^{\mathrm{IA}}_2$",
-    "alpha": r"$\eta^{\mathrm{IA}}_1$",
-    "alpha1": r"$\eta^{\mathrm{IA}}_1$",
-    "alpha2": r"$\eta^{\mathrm{IA}}_2$",
-    "bias_ta": r"$b^{\mathrm{TA}}$",
+    "w": r"$w$",
+    "mnu": r"$m_\nu$",
+    "a": r"$A_1$",
+    "a1": r"$A_1$",
+    "a2": r"$A_2$",
+    "alpha": r"$\eta_1$",
+    "alpha1": r"$\eta_1$",
+    "alpha2": r"$\eta_2$",
+    "bias_ta": r"$b_{\mathrm{ta}}$",
     "alpha_psf": r"$\alpha^{\mathrm{psf}}$",
     "beta_psf": r"$\beta^{\mathrm{psf}}$",
     "psf_cor1_z1": r"$\alpha^{(2)}_1$",
@@ -106,7 +108,7 @@ latexDict = {
     "m3": r"$\Delta{m}_3$",
     "m4": r"$\Delta{m}_4$",
     "logt_agn": r"$\Theta_{\mathrm{AGN}}$",
-    "a_bary": r"$A_{\mathrm{bary}}$",
+    "a_bary": r"$A_{\mathrm{b}}$",
     "psf_alpha2": r"$\alpha^{(2)}$",
     "psf_beta2": r"$\beta^{(2)}$",
     "psf_alpha4": r"$\alpha^{(4)}$",
@@ -114,10 +116,12 @@ latexDict = {
 }
 
 rangeDict = {
-    "ombh2": [0.02, 0.025],
-    "a_s": [0.1, 20],
-    "n_s": [0.87, 1.07],
-    "h0": [0.62, 0.80],
+    "ombh2": [20, 25],
+    "mnu": [0.06, 0.6],
+    "w": [-2, -1./3.],
+    "a_s": [0.5, 10],
+    "n_s": [0.86, 1.07],
+    "h0": [0.62, 0.82],
     "a_bary": [2.0, 3.13],
     "logt_agn": [7.2, 8.3],
     "a": [-6, 6],
@@ -426,6 +430,8 @@ def make_tpcf_plot(title="xi", nzs=4):
     axes = {}
     fig = plt.figure(figsize=((nzs + 1) * 3, (nzs + 1) * 2))
     plt.subplots_adjust(wspace=0, hspace=0)
+    plt.xticks([])
+    plt.yticks([])
 
     if title == "xi":
         label1 = r"$\xi_{+}$"
@@ -522,14 +528,14 @@ def make_tpcf_plot(title="xi", nzs=4):
                     "title should be xi, thetaxi, thetaEB, ratio or ratio2"
                 )
             ax.patch.set_alpha(0.1)
-            ax.tick_params(
-                direction="out",
-                length=8,
-                width=1.5,
-                colors="black",
-                grid_color="gray",
-                grid_alpha=0.6,
-            )
+            # ax.tick_params(
+            #     direction="out",
+            #     length=8,
+            #     width=1.5,
+            #     colors="black",
+            #     grid_color="gray",
+            #     grid_alpha=0.6,
+            # )
             axes.update({"%d%d_p" % (i + 1, j + 1): ax})
             del ax
     # -----xip---ends
@@ -610,14 +616,14 @@ def make_tpcf_plot(title="xi", nzs=4):
             else:
                 raise ValueError("title should be xi, thetaxi or ratio")
             ax.patch.set_alpha(0.1)
-            ax.tick_params(
-                direction="out",
-                length=8,
-                width=1.5,
-                colors="black",
-                grid_color="gray",
-                grid_alpha=0.9,
-            )
+            # ax.tick_params(
+            #     direction="out",
+            #     length=8,
+            #     width=1.5,
+            #     colors="black",
+            #     grid_color="gray",
+            #     grid_alpha=0.9,
+            # )
             axes.update({"%d%d_m" % (i + 1, j + 1): ax})
             del ax
     # -----xim---ends
@@ -680,6 +686,11 @@ def plot_chain_corner(
     stat_method=stat0,
     kde=kde0,
     plot_hists=True,
+    shade=False,
+    color_use=None,
+    line_width=1.5,
+    line_styles=None,
+    ax=None,
 ):
     """Makes the corner plots for posteriors
 
@@ -690,11 +701,16 @@ def plot_chain_corner(
         nlist (list):       a list of parameters
         truth (list):       a list of truth parameters
         kde (float):        kernal density esitamte
-        plot_hists(bool):   whether ploting 1D histogram
+        plot_hists (bool):  whether ploting 1D histogram
+        shade (bool):       whether shade or not
+        color_use (list):   colors for contours
+        line_width (float): line width
     Returns:
         fig (figure):       figure
     """
-    if (scale < 1.5) and (scale > 1.05):
+    if (scale <= 1.1):
+        sigmas = [0., 0.5, 1]
+    elif (scale < 2.):
         sigmas = [0, 1]
     elif scale < 3:
         sigmas = [0, 1, 2]
@@ -702,6 +718,12 @@ def plot_chain_corner(
         sigmas = [0, 1, 2, 3]
     else:
         raise ValueError("scale need to be greater than 1.05 and smaller than 10")
+    if plot_hists:
+        loc = "lower center"
+    else:
+        loc = "upper left"
+    if line_styles is None:
+        line_styles = ['-']*len(clist)
 
     npar = len(nlist)
     if blind_by is not None:
@@ -727,6 +749,10 @@ def plot_chain_corner(
         avel = np.array([0] * len(nlistb))
 
     c = ChainConsumer()
+    if color_use is None:
+        color_use = colors
+    else:
+        assert len(color_use) == len(clist)
     for ii, oo in enumerate(clist):
         # blind sigma_8 and omega_m
         chain_name = cnlist[ii]
@@ -742,31 +768,59 @@ def plot_chain_corner(
             name=chain_name,
             statistics=stat_method,
             plot_point=False,
+            color = color_use[ii],
         )
         del ll, ll2, nlist2
-
-    if len(cnlist) <= 5:
-        fontsize = 20
+    if len(clist) <=3:
         ncol = 1
-    else:
-        fontsize = 18
+        fw = "bold"
+    elif len(cnlist) <= 5:
+        ncol = 1
+        fw = "normal"
+    elif len(cnlist) <= 10:
         ncol = 2
+        fw = "normal"
+    else:
+        ncol = 2
+        fw = "normal"
+
+    if len(nlist)<=2:
+        fontsize = 28
+        bb = 0.2
+        tt = 0.2
+    elif len(nlist)<5:
+        fontsize = 30
+        bb = 0.12
+        tt = 0.12
+    elif len(nlist)<10:
+        fontsize = 32
+        bb = 0.1
+        tt = 0.1
+    else:
+        fontsize = 35
+        bb = 0.05
+        tt = 0.05
     c.configure(
         global_point=False,
-        shade=False,
+        shade=shade,
+        shade_alpha=0.5,
         plot_hists=plot_hists,
         flip=False,
         bar_shade=True,
         statistics=stat_method,
-        label_font_size=14,
-        linewidths=1.5,
+        label_font_size=int(fontsize/1.5)+1,
+        tick_font_size=int(fontsize/1.8)+1,
+        linewidths=line_width,
+        linestyles=line_styles,
         spacing=0.0,
         max_ticks=3,
         sigmas=sigmas,
         summary=True,
         legend_kwargs={
-            "loc": "lower center",
-            "fontsize": fontsize,
+            "loc": loc,
+            "prop": {"weight": fw,
+                     "size": fontsize,
+                     },
             "ncol": ncol,
             "columnspacing": 0.2,
         },
@@ -775,10 +829,15 @@ def plot_chain_corner(
     lnlist = [latexDict[nn] for nn in nlist]
     idx = np.sort(np.unique(lnlist, return_index=True)[1])
     nlist2 = [nlist[ii] for ii in idx]
-    exts = get_summary_extents(stat, nlist2, clist, scale=scale, blind_shift=avel)
-    fig = c.plotter.plot(figsize=2., extents=exts, truth=truth)
-    fig.subplots_adjust(bottom=0.2, left=0.2)
-    return fig
+    if ax is None:
+        exts = get_summary_extents(stat, nlist2, clist, scale=scale, blind_shift=avel)
+        fig = c.plotter.plot(figsize=2., extents=exts, truth=truth)
+        fig.subplots_adjust(bottom=bb, left=tt)
+        return fig
+    else:
+        assert len(nlist) == 2
+        c.plotter.plot_contour(ax, latexDict[nlist[0]], latexDict[nlist[1]])
+        return
 
 
 def get_summary_extents(stat, pnlist, clist, scale=1.0, blind_shift=None):
