@@ -722,8 +722,21 @@ def plot_chain_corner(
         loc = "lower center"
     else:
         loc = "upper left"
+
     if line_styles is None:
         line_styles = ['-']*len(clist)
+    elif isinstance(line_styles, str):
+        line_styles = [line_styles]*len(clist)
+
+    if line_width is None:
+        line_width = [1.0]*len(clist)
+    elif isinstance(line_width, str):
+        line_width = [line_width]*len(clist)
+
+    if shade is None:
+        shade = [False]*len(clist)
+    elif isinstance(shade, bool):
+        shade = [shade]*len(clist)
 
     npar = len(nlist)
     if blind_by is not None:
@@ -749,9 +762,7 @@ def plot_chain_corner(
         avel = np.array([0] * len(nlistb))
 
     c = ChainConsumer()
-    if color_use is None:
-        color_use = colors
-    else:
+    if color_use is not None:
         assert len(color_use) == len(clist)
     for ii, oo in enumerate(clist):
         # blind sigma_8 and omega_m
@@ -759,30 +770,42 @@ def plot_chain_corner(
         nlist2 = [nn for nn in nlist if nn in oo.dtype.names]
         ll = [oo[nn] - avel[nlistb.index(nn)] for nn in nlist2 if nn in nlistb]
         ll2 = [oo[nn] for nn in nlist2 if nn not in nlistb]
-        c.add_chain(
-            ll + ll2,
-            weights=oo["weight"],
-            parameters=[latexDict[nn] for nn in nlist2],
-            posterior=oo["post"],
-            kde=kde,
-            name=chain_name,
-            statistics=stat_method,
-            plot_point=False,
-            color = color_use[ii],
-        )
+        if color_use is None:
+            c.add_chain(
+                ll + ll2,
+                weights=oo["weight"],
+                parameters=[latexDict[nn] for nn in nlist2],
+                posterior=oo["post"],
+                kde=kde,
+                name=chain_name,
+                statistics=stat_method,
+                plot_point=False,
+            )
+        else:
+            c.add_chain(
+                ll + ll2,
+                weights=oo["weight"],
+                parameters=[latexDict[nn] for nn in nlist2],
+                posterior=oo["post"],
+                kde=kde,
+                name=chain_name,
+                statistics=stat_method,
+                plot_point=False,
+                color = color_use[ii],
+            )
         del ll, ll2, nlist2
-    if len(clist) <=3:
+    if len(cnlist) <=3:
         ncol = 1
         fw = "bold"
     elif len(cnlist) <= 5:
         ncol = 1
-        fw = "normal"
+        fw = "bold"
     elif len(cnlist) <= 10:
         ncol = 2
-        fw = "normal"
+        fw = "bold"
     else:
         ncol = 2
-        fw = "normal"
+        fw = "bold"
 
     if len(nlist)<=2:
         fontsize = 28
@@ -801,12 +824,14 @@ def plot_chain_corner(
         bb = 0.05
         tt = 0.05
     c.configure(
+        serif=True,
+        usetex=True,
         global_point=False,
         shade=shade,
-        shade_alpha=0.5,
+        shade_alpha=0.7,
         plot_hists=plot_hists,
         flip=False,
-        bar_shade=True,
+        bar_shade=False,
         statistics=stat_method,
         label_font_size=int(fontsize/1.5)+1,
         tick_font_size=int(fontsize/1.8)+1,
@@ -816,10 +841,11 @@ def plot_chain_corner(
         max_ticks=3,
         sigmas=sigmas,
         summary=True,
+        norm_max=True,
         legend_kwargs={
             "loc": loc,
             "prop": {"weight": fw,
-                     "size": fontsize,
+                     "size": int(fontsize-len(cnlist)*1.5+4),
                      },
             "ncol": ncol,
             "columnspacing": 0.2,
@@ -833,10 +859,12 @@ def plot_chain_corner(
         exts = get_summary_extents(stat, nlist2, clist, scale=scale, blind_shift=avel)
         fig = c.plotter.plot(figsize=2., extents=exts, truth=truth)
         fig.subplots_adjust(bottom=bb, left=tt)
+        c.plotter.restore_rc_params()
         return fig
     else:
         assert len(nlist) == 2
         c.plotter.plot_contour(ax, latexDict[nlist[0]], latexDict[nlist[1]])
+        c.plotter.restore_rc_params()
         return
 
 

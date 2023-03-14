@@ -14,6 +14,7 @@ cminM = 12.89
 cmaxM = 247.75
 
 nmocks = 1404
+rescale_cov = 3
 
 
 def make_model_mock(Dir, blind=0, num=0):
@@ -45,6 +46,8 @@ def make_model_mock(Dir, blind=0, num=0):
             wrkDir, "analysis/%s_xipm/data_extend_all_%s.fits" % (blind_ver, blind_ver)
         )
     )
+    print("rescaling covariance by %d" %rescale_cov)
+    cov = cov * rescale_cov
     assert cov.shape == ((len(logr1) + len(logr2)) * 10, (len(logr1) + len(logr2)) * 10)
     # note, here we use biased covariance without Hartlap correction, which
     # mimic the real data set
