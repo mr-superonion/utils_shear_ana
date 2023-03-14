@@ -828,7 +828,7 @@ def plot_chain_corner(
         usetex=True,
         global_point=False,
         shade=shade,
-        shade_alpha=0.7,
+        shade_alpha=0.5,
         plot_hists=plot_hists,
         flip=False,
         bar_shade=False,
