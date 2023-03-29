@@ -66,10 +66,10 @@ chain_labels_dict = {
 latexDict = {
     "omega_m": r"$\Omega_{\mathrm{m}}$",
     "omega_b": r"$\Omega_{\mathrm{b}}$",
-    "ombh2": r"$\omega_{\mathrm{b}}/10^{-3}$",
+    "ombh2": r"$\omega_{\mathrm{b}}/\!10^{-3}$",
     "sigma_8": r"$\sigma_8$",
     "s_8": r"$S_8$",
-    "a_s": r"$A_s\, /\, 10^{-9}$",
+    "a_s": r"$A_s /\!10^{-9}$",
     "n_s": r"$n_s$",
     "h0": r"$h_0$",
     "w": r"$w$",
@@ -116,6 +116,7 @@ latexDict = {
 }
 
 rangeDict = {
+    "omega_m": [0.10, 70],
     "ombh2": [20, 25],
     "mnu": [0.06, 0.6],
     "w": [-2, -1./3.],
@@ -421,11 +422,12 @@ def make_cosebis_bmode_plot(nmodes):
     return fig, axes
 
 
-def make_tpcf_plot(title="xi", nzs=4):
+def make_tpcf_plot(title="xi", nzs=4, superscript1=None, superscript2=None):
     """Prepares the frames the two-point correlation corner plot
 
     Args:
-        title (str):    title of the figure ['xi', 'thetaxi', 'thetaEB', 'ratio', 'ratio2']
+        title (str):    title of the figure ['xi', 'thetaxi', 'ratio', 'ratio2']
+        nzs (int):      number of redshift bins
     """
     axes = {}
     fig = plt.figure(figsize=((nzs + 1) * 3, (nzs + 1) * 2))
@@ -433,23 +435,33 @@ def make_tpcf_plot(title="xi", nzs=4):
     plt.xticks([])
     plt.yticks([])
 
-    if title == "xi":
-        label1 = r"$\xi_{+}$"
-        label2 = r"$\xi_{-}$"
-    elif title == "thetaxi":
-        label1 = r"$\theta\xi_{+} \times 10^4$"
-        label2 = r"$\theta\xi_{-} \times 10^4$"
-    elif title == "thetaEB":
-        label1 = r"$\theta\xi_{E} \times 10^4$"
-        label2 = r"$\theta\xi_{B} \times 10^4$"
-    elif title == "ratio":
-        label1 = r"$\delta{\xi_{+}}/\xi_{+}$"
-        label2 = r"$\delta{\xi_{-}}/\xi_{-}$"
-    elif title == "ratio2":
-        label1 = r"$\delta{\xi_{+}}/\sigma_{+}$"
-        label2 = r"$\delta{\xi_{-}}/\sigma_{-}$"
+    if superscript1 is None:
+        ss1 = r"\xi_{+}"
+    elif isinstance(superscript1, str):
+        ss1 = r"\xi_{+}^{%s}" %superscript1
     else:
-        raise ValueError("title should be xi, thetaxi, thetaEB, ratio or ratio2")
+        raise TypeError("superscript1 must be str")
+    if superscript2 is None:
+        ss2 = r"\xi_{+}"
+    elif isinstance(superscript2, str):
+        ss2 = r"\xi_{+}^{%s}" %superscript2
+    else:
+        raise TypeError("superscript2 must be str")
+
+    if title == "xi":
+        label1 = r"$%s$" %ss1
+        label2 = r"$%s$" %ss2
+    elif title == "thetaxi":
+        label1 = r"$\theta %s \times 10^4$" %ss1
+        label2 = r"$\theta %s \times 10^4$" %ss2
+    elif title == "ratio":
+        label1 = r"$\delta{%s}/\xi_{+}$" %ss1
+        label2 = r"$\delta{%s}/\xi_{-}$" %ss2
+    elif title == "ratio2":
+        label1 = r"$\delta{%s}/\sigma_{+}$" %ss1
+        label2 = r"$\delta{%s}/\sigma_{-}$" %ss2
+    else:
+        raise ValueError("title should be xi, thetaxi, ratio or ratio2")
     labelsize = 20
     # -----xip---starts
     for i in range(nzs):
@@ -506,16 +518,6 @@ def make_tpcf_plot(title="xi", nzs=4):
                     ax.set_yticks(rr)
                 if j == nzs - 1 and i == 2:
                     ax.set_ylabel(label1, fontsize=labelsize)
-            elif title == "thetaEB":
-                ax.set_ylim(-1, (i + 2) * 2 + 1.8)
-                rr = np.arange(0, (i + 2) * 2 + 0.1, 2)
-                if j != nzs - 1:
-                    ax.set_yticks(rr)
-                    ax.set_yticklabels([""] * len(rr))
-                else:
-                    ax.set_yticks(rr)
-                if j == nzs - 1 and i == 2:
-                    ax.set_ylabel(label1, fontsize=labelsize)
             elif title in ["ratio", "ratio2"]:
                 if j != nzs - 1:
                     ax.set_yticklabels([])
@@ -525,7 +527,7 @@ def make_tpcf_plot(title="xi", nzs=4):
                     ax.set_ylabel(label1, fontsize=labelsize)
             else:
                 raise ValueError(
-                    "title should be xi, thetaxi, thetaEB, ratio or ratio2"
+                    "title should be xi, thetaxi, ratio or ratio2"
                 )
             ax.patch.set_alpha(0.1)
             # ax.tick_params(
@@ -594,16 +596,6 @@ def make_tpcf_plot(title="xi", nzs=4):
                     ax.set_yticklabels([""] * len(rr))
                 else:
                     ax.set_yticks(rr)
-                if i == 2 and j == 3:
-                    ax.set_ylabel(label2, fontsize=labelsize)
-            elif title == "thetaEB":
-                ax.set_ylim(-1, (i + 1) * 2 + 1.8)
-                rr = np.arange(0, (i + 1) * 2 + 0.1, 2)
-                ax.set_yticks(rr)
-                if j != nzs - 1:
-                    ax.set_yticklabels([""] * len(rr))
-                else:
-                    pass
                 if i == 2 and j == 3:
                     ax.set_ylabel(label2, fontsize=labelsize)
             elif title in ["ratio", "ratio2"]:
@@ -691,6 +683,7 @@ def plot_chain_corner(
     line_width=1.5,
     line_styles=None,
     ax=None,
+    contour_labels=None,
 ):
     """Makes the corner plots for posteriors
 
@@ -705,11 +698,13 @@ def plot_chain_corner(
         shade (bool):       whether shade or not
         color_use (list):   colors for contours
         line_width (float): line width
+        contour_labels (float):
+                            contour label, "sigma" or "confidence"
     Returns:
         fig (figure):       figure
     """
     if (scale <= 1.1):
-        sigmas = [0., 0.5, 1]
+        sigmas = [0., 0.3, 0.5]
     elif (scale < 2.):
         sigmas = [0, 1]
     elif scale < 3:
@@ -721,7 +716,7 @@ def plot_chain_corner(
     if plot_hists:
         loc = "lower center"
     else:
-        loc = "upper left"
+        loc = "upper right"
 
     if line_styles is None:
         line_styles = ['-']*len(clist)
@@ -828,13 +823,13 @@ def plot_chain_corner(
         usetex=True,
         global_point=False,
         shade=shade,
-        shade_alpha=0.5,
+        shade_alpha=0.70,
         plot_hists=plot_hists,
         flip=False,
-        bar_shade=False,
+        bar_shade=True,
         statistics=stat_method,
-        label_font_size=int(fontsize/1.5)+1,
-        tick_font_size=int(fontsize/1.8)+1,
+        label_font_size=int(fontsize/1.0)+1,
+        tick_font_size=int(fontsize/1.2)+1,
         linewidths=line_width,
         linestyles=line_styles,
         spacing=0.0,
@@ -842,14 +837,17 @@ def plot_chain_corner(
         sigmas=sigmas,
         summary=True,
         norm_max=True,
+        legend_artists=True,
         legend_kwargs={
             "loc": loc,
             "prop": {"weight": fw,
-                     "size": int(fontsize-len(cnlist)*1.5+4),
+                     "size": int(fontsize-len(cnlist)*2.+4),
                      },
             "ncol": ncol,
             "columnspacing": 0.2,
         },
+        contour_labels=contour_labels,
+        contour_label_font_size=15,
     )
     stat = np.atleast_1d(c.analysis.get_summary())
     lnlist = [latexDict[nn] for nn in nlist]
@@ -1103,7 +1101,7 @@ def plot_pvalue_list(plist, nlist):
     return fig
 
 
-def plot_xipm_data(fname, axes, marker="x", color=colors0[0], nzs=4):
+def plot_xipm_data(fname, axes, marker="x", color=colors0[0], nzs=4, extnms=None):
     """Makes corner plots for xip and xim from cosmosis data file [fits]
 
     Args:
@@ -1114,7 +1112,8 @@ def plot_xipm_data(fname, axes, marker="x", color=colors0[0], nzs=4):
         nzs (int):      number of redshift bins
     """
     hdul = pyfits.open(fname)
-    extnms = ["xi_plus", "xi_minus"]
+    if extnms is None:
+        extnms = ["xi_plus", "xi_minus"]
     cov2 = hdul["COVMAT"].data
     err0 = np.sqrt(np.diag(cov2))
     np0 = hdul["COVMAT"].header["STRT_0"]
@@ -1159,6 +1158,60 @@ def plot_xipm_data(fname, axes, marker="x", color=colors0[0], nzs=4):
             ic += 1
     return
 
+def plot_xipm_error(fname, axes, marker="x", color=colors0[0], nzs=4, extnms=None):
+    """Makes corner plots for xip and xim from cosmosis data file [fits]
+
+    Args:
+        fname (str):    a fits file name
+        axes (dict):    a dictionary of axis generated by `make_tpcf_plot`
+        marker (str):   marker in plot
+        color (str):    color of marker and error bar
+        nzs (int):      number of redshift bins
+    """
+    hdul = pyfits.open(fname)
+    if extnms is None:
+        extnms = ["xi_plus", "xi_minus"]
+    cov2 = hdul["COVMAT"].data
+    err0 = np.sqrt(np.diag(cov2))
+    np0 = hdul["COVMAT"].header["STRT_0"]
+    nm0 = hdul["COVMAT"].header["STRT_1"]
+    nzall = int(nzs * (nzs + 1) // 2)
+    npd = (nm0) // nzall
+    nmd = (cov2.shape[0] - nm0) // nzall
+    err_xip = err0[np0:nm0]
+    err_xip = err_xip.reshape(err_xip.size // npd, npd)
+    err_xim = err0[nm0:]
+    err_xim = err_xim.reshape(err_xim.size // nmd, nmd)
+    ic = 0
+    for i in range(nzs):
+        for j in range(i, nzs):
+            ax = axes["%d%d_p" % (i + 1, j + 1)]
+            msk = (hdul[extnms[0]].data["BIN1"] == (i + 1)) & (
+                hdul[extnms[0]].data["BIN2"] == (j + 1)
+            )
+            dd = hdul[extnms[0]].data[msk]
+            xx = dd["ang"]
+            yerr = err_xip[ic] * xx * 1e4
+            ax.plot(
+                xx, yerr, marker=marker, linestyle="", color=color,
+                markersize=4.0,
+            )
+            del xx, yerr, msk, dd
+            # ---
+            ax = axes["%d%d_m" % (i + 1, j + 1)]
+            msk = (hdul[extnms[1]].data["BIN1"] == (i + 1)) & (
+                hdul[extnms[1]].data["BIN2"] == (j + 1)
+            )
+            dd = hdul[extnms[1]].data[msk]
+            xx = dd["ang"]
+            yerr = err_xim[ic] * xx * 1e4
+            ax.errorbar(
+                xx, yerr, marker=marker, linestyle="", color=color,
+                markersize=4.0,
+            )
+            del xx, yerr, dd
+            ic += 1
+    return
 
 def plot_xipm_model(
     Dir,
@@ -1260,6 +1313,7 @@ def plot_xipm_data_model_ratio(
     pmax=80,
     mmin=25,
     mmax=300,
+    extnms=None,
 ):
     """Makes cornor plots for xip and xim from cosmosis output files [model
     prediction]
@@ -1275,7 +1329,8 @@ def plot_xipm_data_model_ratio(
 
     # read data
     hdul = pyfits.open(fname)
-    extnms = ["xi_plus", "xi_minus"]
+    if extnms is None:
+        extnms = ["xi_plus", "xi_minus"]
     cov2 = hdul["COVMAT"].data
     err0 = np.sqrt(np.diag(cov2))
     np0 = hdul["COVMAT"].header["STRT_0"]

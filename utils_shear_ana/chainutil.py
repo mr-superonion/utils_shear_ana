@@ -93,13 +93,19 @@ def read_cosmosis_chain(infname, flip_dz=True, as_correction=True):
     else:
         has_weight = True
 
+    if ("a_s" not in colnames) and ("ln_as1e10" in colnames):
+        types.append(("a_s", ">f8"))
     # initialize ndarray
     out = np.zeros(nsample, dtype=types)
     for nm in colnames:
         out[nm] = data.T[colnames.index(nm)]
+
+    # some missing parameters
     if cal_s8:
         alpha = 0.5
         out["s_8"] = out["sigma_8"] * (out["omega_m"] / 0.3) ** alpha
+    if ("a_s" not in colnames) and ("ln_as1e10" in colnames):
+        out["a_s"] = np.exp(out["ln_as1e10"]) * 1e-10
 
     # pre processing
     if has_weight:
