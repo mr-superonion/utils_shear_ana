@@ -52,7 +52,7 @@ corB360 = treecorr.GGCorrelation(
 
 
 class EBmode:
-    def __init__(self, Dir, nzs=4, tmin=0.3, tmax=400.0):
+    def __init__(self, Dir, nzs=4, tmin=0.276, tmax=400.0):
         """Class to do EB mode separation based on equations (25) and (26) in
         https://arxiv.org/abs/astro-ph/0112441
 
@@ -127,7 +127,7 @@ class EBmode:
         assert (
             rnom[0] < 300
         ), "the lower-limit of input angular scale shall be less than 300 arcmin"
-        _m = rnom < self.tmax
+        _m = (rnom < self.tmax) & (rnom>self.tmin)
         rnom = rnom[_m]
         lnt = np.log(rnom)
         dlnt = lnt[1] - lnt[0]
@@ -194,7 +194,7 @@ class EBmode:
             "the lower-limit of input angular scale shall be less than %.2f arcmin"
             % self.tmin
         )
-        _m = rnom > self.tmin
+        _m = (rnom < self.tmax) & (rnom>self.tmin)
         rnom = rnom[_m]
         lnt = np.log(rnom)
         dlnt = lnt[1] - lnt[0]

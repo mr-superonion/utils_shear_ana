@@ -660,7 +660,7 @@ def plot_cov_coeff(covIn):
     """
     fig, axes = make_figure_axes(nx=1, ny=1)
     ax = axes[0]
-    im = ax.imshow(covIn, cmap="coolwarm_r", vmin=-1, vmax=1, origin="lower", aspect="auto")
+    im = ax.imshow(covIn, cmap="coolwarm", vmin=-1, vmax=1, origin="lower", aspect="auto")
     fig.colorbar(im)
     ny, nx = covIn.shape
     ax.set_xticks(np.arange(0, nx + 1, 30))
@@ -1269,7 +1269,8 @@ def plot_xipm_model(
             ax.set_xlim(pmin, pmax)
             if blind:
                 ax.set_yticks([])
-            ax.axvspan(7.13, 56.52, color=colors[-1], alpha=0.2)
+            ax.axvspan(1, 7.13, color='gray', alpha=0.2)
+            ax.axvspan(56.52, 100, color='gray', alpha=0.2)
             del ax, xx, yy
 
             ax = axes["%d%d_m" % (i + 1, j + 1)]
@@ -1295,7 +1296,8 @@ def plot_xipm_model(
             ax.set_xlim(mmin, mmax)
             if blind:
                 ax.set_yticks([])
-            ax.axvspan(31.2, 248.0, color=colors[-1], alpha=0.2)
+            ax.axvspan(1, 31.2, color='gray', alpha=0.2)
+            ax.axvspan(248.0, 500, color='gray', alpha=0.2)
             del ax, xx, yy
     return
 

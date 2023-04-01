@@ -486,12 +486,18 @@ def make_cosmosis_tpcf_hdulist_data(corAll, mskAll, covmat, nzs=nzsDF):
     Returns:
         the hdulist of the data and covariance
     """
+    # hdu for data
     dd = convert_treecor2cosmosis(corAll, mskAll, nzs)
     tabP = dd["xip"]
     tabM = dd["xim"]
     del dd
+    hduP = make_cs_hdu(tabP, "G+R")
+    hduM = make_cs_hdu(tabM, "G-R")
 
+    # primary hdu
     hdu0 = pyfits.PrimaryHDU()
+
+    # hdu for covariance
     if covmat is None:
         # make a diagonal, homogeneous covmat
         covmat = np.eye(len(tabP) + len(tabM)) * 1e-12
@@ -499,8 +505,7 @@ def make_cosmosis_tpcf_hdulist_data(corAll, mskAll, covmat, nzs=nzsDF):
     hduCov = make_cscov_hdu(
         covmat, strtlst=[0, len(tabP)], namelst=["xi_plus", "xi_minus"]
     )
-    hduP = make_cs_hdu(tabP, "G+R")
-    hduM = make_cs_hdu(tabM, "G-R")
+
     hdul = pyfits.HDUList([hdu0, hduCov, hduP, hduM])
     return hdul
 
