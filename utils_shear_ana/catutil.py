@@ -736,12 +736,12 @@ def get_ma_sim(
         return popt[0], popt[1], np.sqrt(pcov[0][0]), np.sqrt(pcov[1][1])
 
 
-def get_shear_regauss(datIn, mbias, msel=0.0, asel=0.0):
+def get_shear_regauss(catalog, mbias, msel=0.0, asel=0.0):
     """Returns the regauss shear in data *on single galaxy level*.
     Note: shape weight should be added when caluculating ensemble average.
 
     Args:
-        datIn (ndarray):    input hsc catalog
+        catalog (ndarray):    input hsc catalog
         mbias (float):      average multiplicative bias [m+dm2]
         msel (float):       selection multiplicative bias for the sample
         asel (float):       selection additive bias
@@ -749,24 +749,28 @@ def get_shear_regauss(datIn, mbias, msel=0.0, asel=0.0):
         g1 (ndarray):       the first component of shear
         g2 (ndarray):       the second component of shear
     """
-    wsum = np.sum(datIn["i_hsmshaperegauss_derived_weight"])
-    eres = (
-        1.0
-        - np.sum(
-            datIn["i_hsmshaperegauss_derived_rms_e"] ** 2.0
-            * datIn["i_hsmshaperegauss_derived_weight"]
-        )
-        / wsum
-    )
-    g1 = (
-        datIn["i_hsmshaperegauss_e1"] / 2.0 / eres
-        - datIn["i_hsmshaperegauss_derived_shear_bias_c1"]
-    ) / (1.0 + mbias)
-    g2 = (
-        datIn["i_hsmshaperegauss_e2"] / 2.0 / eres
-        - datIn["i_hsmshaperegauss_derived_shear_bias_c2"]
-    ) / (1.0 + mbias)
-    e1pg, e2pg = get_psf_ellip(datIn)  # PSF shape
+    if "i_hsmshaperegauss_derived_weight" in catalog.dtype.names:
+        wname = "i_hsmshaperegauss_derived_weight"
+        erms_name = "i_hsmshaperegauss_derived_rms_e"
+        e1name = "i_hsmshaperegauss_e1"
+        e2name = "i_hsmshaperegauss_e2"
+        c1name = "i_hsmshaperegauss_derived_shear_bias_c1"
+        c2name = "i_hsmshaperegauss_derived_shear_bias_c2"
+    elif "ishape_hsm_regauss_derived_shape_weight" in catalog.dtype.names:
+        wname = "ishape_hsm_regauss_derived_shape_weight"
+        erms_name = "ishape_hsm_regauss_derived_rms_e"
+        e1name = "ishape_hsm_regauss_e1"
+        e2name = "ishape_hsm_regauss_e2"
+        c1name = "ishape_hsm_regauss_derived_shear_bias_c1"
+        c2name = "ishape_hsm_regauss_derived_shear_bias_c2"
+    else:
+        raise ValueError("Cannot process the catalog")
+
+    wsum = np.sum(catalog[wname])
+    eres = 1.0 - np.sum(catalog[erms_name] ** 2.0 * catalog[wname]) / wsum
+    g1 = (catalog[e1name] / 2.0 / eres - catalog[c1name]) / (1.0 + mbias)
+    g2 = (catalog[e2name] / 2.0 / eres - catalog[c2name]) / (1.0 + mbias)
+    e1pg, e2pg = get_psf_ellip(catalog)  # PSF shape
     # correcting for selection bias
     g1 = (g1 - e1pg * asel) / (1.0 + msel)
     g2 = (g2 - e2pg * asel) / (1.0 + msel)
@@ -2167,3 +2171,14 @@ def get_mask_G09_good_seeing(data):
     mm = (ra >= 132.5) & (ra <= 140.0) & (dec >= 1.6) & (dec < 5.2)
     mm = ~mm
     return mm
+
+
+def get_shape_weight_regauss(catalog):
+    """This utility returns the i-band reGauss shape weight"""
+    if "i_hsmshaperegauss_derived_weight" in catalog.dtype.names:  # s19
+        weight = catalog["i_hsmshaperegauss_derived_weight"]
+    elif "ishape_hsm_regauss_derived_shape_weight" in catalog.dtype.names:  # s16
+        weight = catalog["ishape_hsm_regauss_derived_shape_weight"]
+    else:
+        weight = _nan_array(len(catalog))
+    return weight

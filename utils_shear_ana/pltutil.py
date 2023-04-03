@@ -119,7 +119,7 @@ rangeDict = {
     "omega_m": [0.10, 70],
     "ombh2": [20, 25],
     "mnu": [0.06, 0.6],
-    "w": [-2, -1./3.],
+    "w": [-2, -1.0 / 3.0],
     "a_s": [0.5, 10],
     "n_s": [0.86, 1.07],
     "h0": [0.62, 0.82],
@@ -422,7 +422,9 @@ def make_cosebis_bmode_plot(nmodes):
     return fig, axes
 
 
-def make_tpcf_plot(title="xi", nzs=4, superscript1=None, superscript2=None):
+def make_tpcf_plot(
+    title="xi", nzs=4, superscript1=None, superscript2=None, small_range=False
+):
     """Prepares the frames the two-point correlation corner plot
 
     Args:
@@ -438,28 +440,28 @@ def make_tpcf_plot(title="xi", nzs=4, superscript1=None, superscript2=None):
     if superscript1 is None:
         ss1 = r"\xi_{+}"
     elif isinstance(superscript1, str):
-        ss1 = r"\xi_{+}^{%s}" %superscript1
+        ss1 = r"\xi_{+}^{%s}" % superscript1
     else:
         raise TypeError("superscript1 must be str")
     if superscript2 is None:
         ss2 = r"\xi_{+}"
     elif isinstance(superscript2, str):
-        ss2 = r"\xi_{+}^{%s}" %superscript2
+        ss2 = r"\xi_{+}^{%s}" % superscript2
     else:
         raise TypeError("superscript2 must be str")
 
     if title == "xi":
-        label1 = r"$%s$" %ss1
-        label2 = r"$%s$" %ss2
+        label1 = r"$%s$" % ss1
+        label2 = r"$%s$" % ss2
     elif title == "thetaxi":
-        label1 = r"$\theta %s \times 10^4$" %ss1
-        label2 = r"$\theta %s \times 10^4$" %ss2
+        label1 = r"$\theta %s \times 10^4$" % ss1
+        label2 = r"$\theta %s \times 10^4$" % ss2
     elif title == "ratio":
-        label1 = r"$\delta{%s}/\xi_{+}$" %ss1
-        label2 = r"$\delta{%s}/\xi_{-}$" %ss2
+        label1 = r"$\delta{%s}/\xi_{+}$" % ss1
+        label2 = r"$\delta{%s}/\xi_{-}$" % ss2
     elif title == "ratio2":
-        label1 = r"$\delta{%s}/\sigma_{+}$" %ss1
-        label2 = r"$\delta{%s}/\sigma_{-}$" %ss2
+        label1 = r"$\delta{%s}/\sigma_{+}$" % ss1
+        label2 = r"$\delta{%s}/\sigma_{-}$" % ss2
     else:
         raise ValueError("title should be xi, thetaxi, ratio or ratio2")
     labelsize = 20
@@ -493,8 +495,14 @@ def make_tpcf_plot(title="xi", nzs=4, superscript1=None, superscript2=None):
             # x-axis
             ax.set_xscale("symlog", linthresh=1e-1)
             ax.xaxis.set_minor_locator(MinorSymLogLocator(1e-1))
+            if small_range:
+                ax.set_xticks([5, 10, 20, 40, 80])
+                plt.minorticks_off()
             if i != 0:
                 ax.set_xticklabels([])
+            else:
+                if small_range:
+                    ax.set_xticklabels(["5", "10", "20", "40", ""])
             if i == 0 and j == 1:
                 ax.set_xlabel(r"$\theta$ [arcmin]")
             # y-axis
@@ -526,20 +534,11 @@ def make_tpcf_plot(title="xi", nzs=4, superscript1=None, superscript2=None):
                 if j == nzs - 1 and i == 2:
                     ax.set_ylabel(label1, fontsize=labelsize)
             else:
-                raise ValueError(
-                    "title should be xi, thetaxi, ratio or ratio2"
-                )
+                raise ValueError("title should be xi, thetaxi, ratio or ratio2")
             ax.patch.set_alpha(0.1)
-            # ax.tick_params(
-            #     direction="out",
-            #     length=8,
-            #     width=1.5,
-            #     colors="black",
-            #     grid_color="gray",
-            #     grid_alpha=0.6,
-            # )
             axes.update({"%d%d_p" % (i + 1, j + 1): ax})
             del ax
+
     # -----xip---ends
 
     # -----xim---starts
@@ -572,8 +571,15 @@ def make_tpcf_plot(title="xi", nzs=4, superscript1=None, superscript2=None):
             # x-axis
             ax.set_xscale("symlog", linthresh=1e-1)
             ax.xaxis.set_minor_locator(MinorSymLogLocator(1e-1))
+
+            if small_range:
+                ax.set_xticks([50, 100, 200])
+                plt.minorticks_off()
             if i != j:
                 ax.set_xticklabels([])
+            else:
+                if small_range:
+                    ax.set_xticklabels(["50", "100", "200"])
 
             # y-axis
             ax.yaxis.set_label_position("right")
@@ -608,46 +614,10 @@ def make_tpcf_plot(title="xi", nzs=4, superscript1=None, superscript2=None):
             else:
                 raise ValueError("title should be xi, thetaxi or ratio")
             ax.patch.set_alpha(0.1)
-            # ax.tick_params(
-            #     direction="out",
-            #     length=8,
-            #     width=1.5,
-            #     colors="black",
-            #     grid_color="gray",
-            #     grid_alpha=0.9,
-            # )
             axes.update({"%d%d_m" % (i + 1, j + 1): ax})
             del ax
     # -----xim---ends
     return fig, axes
-
-
-# import seaborn as sns
-# def plot_cov(covIn, vmin=-3e-12, vmax=3e-11):
-#     """Makes plot for covariance matrix for cosmic shear
-
-#     Args:
-#         covIn (ndarray):    covariance matrix
-#         vmin (float):       minimum value
-#         vmax (float):       maximum value
-#     Returns:
-#         fig (figure):       figure for covariance
-#     """
-#     fig = plt.figure(figsize=(12, 10))
-#     norm = SymLogNorm(linthresh=1e-13, vmin=vmin, vmax=vmax)
-#     ax = sns.heatmap(
-#         covIn,
-#         cmap="RdBu",
-#         norm=norm,
-#         square=True,
-#     )
-#     ax.invert_yaxis()
-#     ny, nx = covIn.shape
-#     ax.set_xticks(np.arange(0, nx, 20))
-#     ax.set_xticklabels([str(i) for i in np.arange(0, nx, 20)])
-#     ax.set_yticks(np.arange(0, ny, 20))
-#     ax.set_yticklabels([str(i) for i in np.arange(0, ny, 20)])
-#     return fig
 
 
 def plot_cov_coeff(covIn):
@@ -660,7 +630,9 @@ def plot_cov_coeff(covIn):
     """
     fig, axes = make_figure_axes(nx=1, ny=1)
     ax = axes[0]
-    im = ax.imshow(covIn, cmap="coolwarm", vmin=-1, vmax=1, origin="lower", aspect="auto")
+    im = ax.imshow(
+        covIn, cmap="coolwarm", vmin=-1, vmax=1, origin="lower", aspect="auto"
+    )
     fig.colorbar(im)
     ny, nx = covIn.shape
     ax.set_xticks(np.arange(0, nx + 1, 30))
@@ -703,9 +675,9 @@ def plot_chain_corner(
     Returns:
         fig (figure):       figure
     """
-    if (scale <= 1.1):
-        sigmas = [0., 0.3, 0.5]
-    elif (scale < 2.):
+    if scale <= 1.1:
+        sigmas = [0.0, 0.3, 0.5]
+    elif scale < 2.0:
         sigmas = [0, 1]
     elif scale < 3:
         sigmas = [0, 1, 2]
@@ -719,19 +691,19 @@ def plot_chain_corner(
         loc = "upper right"
 
     if line_styles is None:
-        line_styles = ['-']*len(clist)
+        line_styles = ["-"] * len(clist)
     elif isinstance(line_styles, str):
-        line_styles = [line_styles]*len(clist)
+        line_styles = [line_styles] * len(clist)
 
     if line_width is None:
-        line_width = [1.0]*len(clist)
+        line_width = [1.0] * len(clist)
     elif isinstance(line_width, str):
-        line_width = [line_width]*len(clist)
+        line_width = [line_width] * len(clist)
 
     if shade is None:
-        shade = [False]*len(clist)
+        shade = [False] * len(clist)
     elif isinstance(shade, bool):
-        shade = [shade]*len(clist)
+        shade = [shade] * len(clist)
 
     npar = len(nlist)
     if blind_by is not None:
@@ -786,10 +758,10 @@ def plot_chain_corner(
                 name=chain_name,
                 statistics=stat_method,
                 plot_point=False,
-                color = color_use[ii],
+                color=color_use[ii],
             )
         del ll, ll2, nlist2
-    if len(cnlist) <=3:
+    if len(cnlist) <= 3:
         ncol = 1
         fw = "bold"
     elif len(cnlist) <= 5:
@@ -802,15 +774,15 @@ def plot_chain_corner(
         ncol = 2
         fw = "bold"
 
-    if len(nlist)<=2:
+    if len(nlist) <= 2:
         fontsize = 28
         bb = 0.2
         tt = 0.2
-    elif len(nlist)<5:
+    elif len(nlist) < 5:
         fontsize = 30
         bb = 0.12
         tt = 0.12
-    elif len(nlist)<10:
+    elif len(nlist) < 10:
         fontsize = 32
         bb = 0.1
         tt = 0.1
@@ -828,8 +800,8 @@ def plot_chain_corner(
         flip=False,
         bar_shade=True,
         statistics=stat_method,
-        label_font_size=int(fontsize/1.0)+1,
-        tick_font_size=int(fontsize/1.2)+1,
+        label_font_size=int(fontsize / 1.0) + 1,
+        tick_font_size=int(fontsize / 1.2) + 1,
         linewidths=line_width,
         linestyles=line_styles,
         spacing=0.0,
@@ -840,9 +812,10 @@ def plot_chain_corner(
         legend_artists=True,
         legend_kwargs={
             "loc": loc,
-            "prop": {"weight": fw,
-                     "size": int(fontsize-len(cnlist)*2.+4),
-                     },
+            "prop": {
+                "weight": fw,
+                "size": int(fontsize - len(cnlist) * 2.0 + 4),
+            },
             "ncol": ncol,
             "columnspacing": 0.2,
         },
@@ -855,7 +828,7 @@ def plot_chain_corner(
     nlist2 = [nlist[ii] for ii in idx]
     if ax is None:
         exts = get_summary_extents(stat, nlist2, clist, scale=scale, blind_shift=avel)
-        fig = c.plotter.plot(figsize=2., extents=exts, truth=truth)
+        fig = c.plotter.plot(figsize=2.0, extents=exts, truth=truth)
         fig.subplots_adjust(bottom=bb, left=tt)
         c.plotter.restore_rc_params()
         return fig
@@ -1056,7 +1029,7 @@ def plot_chain_summary(
                 axes[j].axvspan(lower0, upper0, color="gray", alpha=0.2)
                 axes[j].set_title(latexDict[pnlist[j]], fontsize=20)
                 axes[j].set_xlim(extent[j])
-    axes[0].tick_params(axis='y', which='major', pad=10)
+    axes[0].tick_params(axis="y", which="major", pad=10)
     plt.ylim(-0.5, nchain - 0.5)
     plt.yticks(range(nchain), cnlist)
     plt.gca().invert_yaxis()
@@ -1065,7 +1038,7 @@ def plot_chain_summary(
         hspace=0.0,
         top=0.8,
         bottom=0.2,
-        left = 0.20,
+        left=0.20,
     )
     return fig
 
@@ -1137,8 +1110,14 @@ def plot_xipm_data(fname, axes, marker="x", color=colors0[0], nzs=4, extnms=None
             yy = dd["value"] * xx * 1e4
             yerr = err_xip[ic] * xx * 1e4
             ax.errorbar(
-                xx, yy, yerr, marker=marker, linestyle="", color=color,
+                xx,
+                yy,
+                yerr,
+                marker=marker,
+                linestyle="",
+                color=color,
                 markersize=4.0,
+                markeredgewidth=2.0,
             )
             del xx, yy, msk, dd
             # ---
@@ -1151,12 +1130,19 @@ def plot_xipm_data(fname, axes, marker="x", color=colors0[0], nzs=4, extnms=None
             yy = dd["value"] * xx * 1e4
             yerr = err_xim[ic] * xx * 1e4
             ax.errorbar(
-                xx, yy, yerr, marker=marker, linestyle="", color=color,
+                xx,
+                yy,
+                yerr,
+                marker=marker,
+                linestyle="",
+                color=color,
                 markersize=4.0,
+                markeredgewidth=2.0,
             )
             del xx, yy, dd
             ic += 1
     return
+
 
 def plot_xipm_error(fname, axes, marker="x", color=colors0[0], nzs=4, extnms=None):
     """Makes corner plots for xip and xim from cosmosis data file [fits]
@@ -1193,7 +1179,11 @@ def plot_xipm_error(fname, axes, marker="x", color=colors0[0], nzs=4, extnms=Non
             xx = dd["ang"]
             yerr = err_xip[ic] * xx * 1e4
             ax.plot(
-                xx, yerr, marker=marker, linestyle="", color=color,
+                xx,
+                yerr,
+                marker=marker,
+                linestyle="",
+                color=color,
                 markersize=4.0,
             )
             del xx, yerr, msk, dd
@@ -1206,12 +1196,17 @@ def plot_xipm_error(fname, axes, marker="x", color=colors0[0], nzs=4, extnms=Non
             xx = dd["ang"]
             yerr = err_xim[ic] * xx * 1e4
             ax.errorbar(
-                xx, yerr, marker=marker, linestyle="", color=color,
+                xx,
+                yerr,
+                marker=marker,
+                linestyle="",
+                color=color,
                 markersize=4.0,
             )
             del xx, yerr, dd
             ic += 1
     return
+
 
 def plot_xipm_model(
     Dir,
@@ -1269,8 +1264,8 @@ def plot_xipm_model(
             ax.set_xlim(pmin, pmax)
             if blind:
                 ax.set_yticks([])
-            ax.axvspan(1, 7.13, color='gray', alpha=0.2)
-            ax.axvspan(56.52, 100, color='gray', alpha=0.2)
+            ax.axvspan(1, 7.13, color="gray", alpha=0.4)
+            ax.axvspan(56.52, 100, color="gray", alpha=0.4)
             del ax, xx, yy
 
             ax = axes["%d%d_m" % (i + 1, j + 1)]
@@ -1296,8 +1291,8 @@ def plot_xipm_model(
             ax.set_xlim(mmin, mmax)
             if blind:
                 ax.set_yticks([])
-            ax.axvspan(1, 31.2, color='gray', alpha=0.2)
-            ax.axvspan(248.0, 500, color='gray', alpha=0.2)
+            ax.axvspan(1, 31.2, color="gray", alpha=0.4)
+            ax.axvspan(248.0, 500, color="gray", alpha=0.4)
             del ax, xx, yy
     return
 
@@ -1383,7 +1378,7 @@ def plot_xipm_data_model_ratio(
 
             ax.set_xlim(pmin, pmax)
             ax.set_ylim(-5.8, 5.8)
-            ax.axvspan(7.13, 56.52, color=colors[-1], alpha=0.2)
+            ax.axvspan(7.13, 56.52, color=colors[-1], alpha=0.4)
             if blind:
                 ax.set_yticks([])
             del xx, yy, ymod, msk, dd, ax, mod
@@ -1415,7 +1410,7 @@ def plot_xipm_data_model_ratio(
             )
             ax.set_xlim(mmin, mmax)
             ax.set_ylim(-5.8, 5.8)
-            ax.axvspan(31.2, 247.0, color=colors[-1], alpha=0.2)
+            ax.axvspan(31.2, 247.0, color=colors[-1], alpha=0.4)
             if blind:
                 ax.set_yticks([])
             del ax, xx, yy, ymod, dd, mod, msk
@@ -1437,6 +1432,7 @@ def nestcheck_plot(infname, n_simulate=100, blind=False, s8_only=False):
     output_info = TextColumnOutput.load_from_options({"filename": infname})
     colnames, data, metadata, _, final_meta = output_info
     names_all = [nn.split("--")[-1].lower() for nn in colnames]
+
     def get_id(name):
         return np.where(np.array(names_all) == name)[0][0]
 
@@ -1456,7 +1452,7 @@ def nestcheck_plot(infname, n_simulate=100, blind=False, s8_only=False):
             labels=labels,
             n_simulate=n_simulate,
             colors=cblue,
-            colormaps = ['Blues_r']
+            colormaps=["Blues_r"],
         )
         if blind:
             for ii in [2, 4, 6]:
@@ -1473,7 +1469,7 @@ def nestcheck_plot(infname, n_simulate=100, blind=False, s8_only=False):
             labels=labels,
             n_simulate=n_simulate,
             colors=cblue,
-            colormaps = ['Blues_r']
+            colormaps=["Blues_r"],
         )
         if blind:
             for ii in [2]:

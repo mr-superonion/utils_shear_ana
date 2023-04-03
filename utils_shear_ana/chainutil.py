@@ -166,8 +166,9 @@ def read_cosmosis_max(infname):
     return out
 
 
-def estimate_parameters_from_chain(infname, ptype="map",
-        blind=True, do_write=True, params_dict=None):
+def estimate_parameters_from_chain(
+    infname, ptype="map", blind=True, do_write=True, params_dict=None
+):
     """Estimate the parameters and write it to file
 
     Args:
@@ -183,9 +184,9 @@ def estimate_parameters_from_chain(infname, ptype="map",
     if params_dict is not None:
         for par in params_dict.keys():
             chain[par] = params_dict[par]
-        pname = 'changed'
+        pname = "changed"
     else:
-        pname = ''
+        pname = ""
     if blind:
         # use wmap9 cosmology to blind the output
         chain["omega_m"] = wmap9Dict["omega_m"]
@@ -236,9 +237,9 @@ def estimate_parameters_from_chain(infname, ptype="map",
                         if nn == "a_s":
                             # the a_s in chain is scaled to by 1e9 !
                             # here, we rescaled it back
-                            tmp = "%s = %.6E\n" % (nn, out[nn]/1e9)
-                        elif nn=="ombh2":
-                            tmp = "%s = %.6E\n" % (nn, out[nn]/1e3)
+                            tmp = "%s = %.6E\n" % (nn, out[nn] / 1e9)
+                        elif nn == "ombh2":
+                            tmp = "%s = %.6E\n" % (nn, out[nn] / 1e3)
                         else:
                             tmp = "%s = %.6E\n" % (nn, out[nn])
                         npar_write += 1

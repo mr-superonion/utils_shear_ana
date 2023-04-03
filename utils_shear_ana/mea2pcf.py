@@ -127,7 +127,7 @@ class EBmode:
         assert (
             rnom[0] < 300
         ), "the lower-limit of input angular scale shall be less than 300 arcmin"
-        _m = (rnom < self.tmax) & (rnom>self.tmin)
+        _m = (rnom < self.tmax) & (rnom > self.tmin)
         rnom = rnom[_m]
         lnt = np.log(rnom)
         dlnt = lnt[1] - lnt[0]
@@ -194,7 +194,7 @@ class EBmode:
             "the lower-limit of input angular scale shall be less than %.2f arcmin"
             % self.tmin
         )
-        _m = (rnom < self.tmax) & (rnom>self.tmin)
+        _m = (rnom < self.tmax) & (rnom > self.tmin)
         rnom = rnom[_m]
         lnt = np.log(rnom)
         dlnt = lnt[1] - lnt[0]
@@ -370,12 +370,14 @@ def convert_data2treecat(datIn, mbias, msel=0.0, asel=0.0):
         tree_cat:           treecorr catalog
     """
     g1I, g2I = catutil.get_shear_regauss(datIn, mbias, msel, asel)
+    ra, dec = catutil.get_radec(datIn)
+    weight = catutil.get_shape_weight_regauss(datIn)
     tree_cat = treecorr.Catalog(
         g1=g1I,
         g2=-g2I,
-        ra=datIn["i_ra"],
-        dec=datIn["i_dec"],
-        w=datIn["i_hsmshaperegauss_derived_weight"],
+        ra=ra,
+        dec=dec,
+        w=weight,
         ra_units="deg",
         dec_units="deg",
     )
