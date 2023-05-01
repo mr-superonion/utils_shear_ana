@@ -31,8 +31,8 @@ from .datvutil import Interp1d
 from matplotlib.ticker import Locator
 
 # some default setups
-kde0 = 1.5
-stat0 = "max"
+kde0 = 1.
+stat0 = "mean"
 # list of blinded parameters
 nlistb = ["s_8", "omega_m", "sigma_8", "a_s"]
 
@@ -444,9 +444,9 @@ def make_tpcf_plot(
     else:
         raise TypeError("superscript1 must be str")
     if superscript2 is None:
-        ss2 = r"\xi_{+}"
+        ss2 = r"\xi_{-}"
     elif isinstance(superscript2, str):
-        ss2 = r"\xi_{+}^{%s}" % superscript2
+        ss2 = r"\xi_{-}^{%s}" % superscript2
     else:
         raise TypeError("superscript2 must be str")
 
