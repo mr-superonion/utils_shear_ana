@@ -176,6 +176,7 @@ def estimate_parameters_from_chain(
         chain (ndarray):    input chain [default: None]
         blind (bool):       whether blind the output
         do_write (bool):    whether write down the estimated parameters
+        params_dict (dict): A dictionary of parameters to replace
     Returns:
         max_post (dict):    maximum a posterior
     """
@@ -186,7 +187,7 @@ def estimate_parameters_from_chain(
             chain[par] = params_dict[par]
         pname = "changed"
     else:
-        pname = ""
+        pname = "estimated"
     if blind:
         # use wmap9 cosmology to blind the output
         chain["omega_m"] = wmap9Dict["omega_m"]

@@ -31,8 +31,8 @@ from .datvutil import Interp1d
 from matplotlib.ticker import Locator
 
 # some default setups
-kde0 = 1.
-stat0 = "mean"
+kde0 = 1.5
+stat0 = "max"
 # list of blinded parameters
 nlistb = ["s_8", "omega_m", "sigma_8", "a_s"]
 
