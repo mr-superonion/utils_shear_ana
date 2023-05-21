@@ -6,18 +6,15 @@ import astropy.io.fits as pyfits
 from utils_shear_ana import datvutil, mea2pcf
 from argparse import ArgumentParser
 
-wrkDir = os.environ["rootDir"]
-
 cminP = 2.94
 cmaxP = 137.17
 cminM = 12.89
 cmaxM = 247.75
 
 nmocks = 1404
-rescale_cov = 3
 
 
-def make_model_mock(Dir, blind=0, num=0):
+def make_model_mock(Dir, blind=0, num=0, rescale_cov=1.):
     """Gets logr bins for xip and xim
 
     Args:
@@ -43,29 +40,27 @@ def make_model_mock(Dir, blind=0, num=0):
     # covariance
     cov = pyfits.getdata(
         os.path.join(
-            wrkDir, "analysis/%s_xipm/data_extend_all_%s.fits" % (blind_ver, blind_ver)
+            os.environ["rootDir"],
+            "analysis/%s_xipm/data_extend_all_%s.fits" % (blind_ver, blind_ver),
         )
     )
     print("rescaling covariance by %d" %rescale_cov)
     cov = cov * rescale_cov
     assert cov.shape == ((len(logr1) + len(logr2)) * 10, (len(logr1) + len(logr2)) * 10)
-    # note, here we use biased covariance without Hartlap correction, which
-    # mimic the real data set
     out = datvutil.make_cosmosis_tpcf_hdulist_model(Dir, logr1, logr2, cov)
     out.writeto("%s.fits" % Dir, overwrite=True)
     nxp = len(out[2].data)
     nxm = len(out[3].data)
 
     if num > 0:
-        # Hartlap correction since the inverse of cov will be used to generate
-        # multivariate normal random mocks
-        ndim = cov.shape[0]
-        cov2 = cov * (nmocks - 1.0) / (nmocks - ndim - 2.0)
+        # We should not add Hartlap correction here
+        # ndim = cov.shape[0]
+        # cov2 = cov * (nmocks - 1.0) / (nmocks - ndim - 2.0)
         np.random.seed(1)
         odir = "%s_ran" % Dir
         os.makedirs(odir, exist_ok=True)
         datAll = np.hstack([out[2].data["value"], out[3].data["value"]])
-        mockAll = np.random.multivariate_normal(datAll, cov2, num)
+        mockAll = np.random.multivariate_normal(datAll, cov, num)
 
         # write output
         for i in range(num):
@@ -87,9 +82,20 @@ if __name__ == "__main__":
         nargs="+",
     )
     parser.add_argument(
-        "-b", "--blind", type=int, default=0, help="blinded version, 0, 1 or 2"
+        "-b", "--blind",
+        type=int, default=0,
+        help="blinded version, 0, 1 or 2",
     )
-    parser.add_argument("-n", "--num", type=int, default=0, help="number of simlations")
+    parser.add_argument(
+        "-n", "--num",
+        type=int, default=0,
+        help="number of simlations"
+    )
+    parser.add_argument(
+        "-s", "--rescale_cov",
+        type=float, default=1.,
+        help="rescale covariance"
+    )
     args = parser.parse_args()
     for dd in args.dirname:
-        make_model_mock(dd, args.blind, args.num)
+        make_model_mock(dd, args.blind, args.num, args.rescale_cov)
