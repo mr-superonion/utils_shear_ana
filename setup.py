@@ -34,6 +34,7 @@ setup(
         "getdist",
         "chainconsumer",
         "healpy",
+        "nestcheck",
         "tensiometer",
         "treecorr",
     ],
