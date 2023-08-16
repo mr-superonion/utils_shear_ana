@@ -914,9 +914,9 @@ def plot_chain_summary(
     cnlist,
     blind_by="fid",
     pnlist=None,
-    nstat=1,
     stat_method=stat0,
     kde=kde0,
+    rm_list=None,
 ):
     """Plots the summary for a list of chains
 
@@ -924,14 +924,13 @@ def plot_chain_summary(
         clist (list):       chain list [a list of ndarray]
         cnlist (list):      chain name list [a list of str]
         blind_by (str):     whether to blind_by the reaults
-        pnlist (list):      parameter list
-        nstat (int):        number of statistics [MEAN and MAP]
+        pnlist (list):      parameter name list
         kde (float):        kernal density esitamte
     Return:
         fig (figure):       mpl figure
     """
-    fmts = ["o", "d"]
-    alphas = [1.0, 1.0]
+    fmt = "o"
+    alpha = 1.0
     if pnlist is None:
         pnlist = ["omega_m", "sigma_8", "s_8"]
     npar = len(pnlist)
@@ -984,51 +983,41 @@ def plot_chain_summary(
     parlims = get_summary_lims(stat, pnlist, clist)
     extent = get_summary_extents(stat, pnlist, clist, scale=1.5)
 
-    if nstat == 1:
-        parlims = [parlims]
-    elif nstat == 2:
-        pass
-        # c.configure(global_point=True, statistics=stat_method)
-        # stat = c.analysis.get_summary()
-        # parlims2 = get_summary_lims(stat, pnlist, clist)
-        # parlims = [parlims, parlims2]
-        # del stat, parlims2
-    else:
-        raise ValueError("nstat can only be 1 or 2.")
-
     fig, axes = plt.subplots(
         1,
         npar,
         sharey=True,
         figsize=((npar + 1) * 2, nchain // 2 + 1),
     )
+    if npar == 1:
+        axes = [axes]
     lower0 = None
     upper0 = None
-    for h in range(nstat):
-        # iteration on stats
-        for j in range(npar):
-            # iteration on parameters
-            for i in range(nchain):
-                # iteration on chains
-                lower, mid, upper = tuple(parlims[h][i][j])
-                if h == 0 and i == 0:
-                    lower0 = lower
-                    upper0 = upper
-                err = np.array([[mid - lower, upper - mid]]).reshape(2, 1)
-                axes[j].errorbar(
-                    [mid],
-                    [i + h * 0.3],
-                    xerr=err,
-                    fmt=fmts[h],
-                    alpha=alphas[h],
-                    elinewidth=1.6,
-                    color=colors[0],
-                )
-            if h == 0:
-                axes[j].tick_params(axis="both", which="major", labelsize=16)
-                axes[j].axvspan(lower0, upper0, color="gray", alpha=0.2)
-                axes[j].set_title(latexDict[pnlist[j]], fontsize=20)
-                axes[j].set_xlim(extent[j])
+    for j in range(npar):
+        # iteration on parameters
+        for i in range(nchain):
+            # iteration on chains
+            lower, mid, upper = tuple(parlims[i][j])
+            if i == 0:
+                lower0 = lower
+                upper0 = upper
+            if rm_list is not None:
+                if (i, j) in rm_list:
+                    continue
+            err = np.array([[mid - lower, upper - mid]]).reshape(2, 1)
+            axes[j].errorbar(
+                [mid],
+                [i],
+                xerr=err,
+                fmt=fmt,
+                alpha=alpha,
+                elinewidth=1.6,
+                color=colors[0],
+            )
+        axes[j].tick_params(axis="both", which="major", labelsize=16)
+        axes[j].axvspan(lower0, upper0, color="gray", alpha=0.2)
+        axes[j].set_title(latexDict[pnlist[j]], fontsize=20)
+        axes[j].set_xlim(extent[j])
     axes[0].tick_params(axis="y", which="major", pad=10)
     plt.ylim(-0.5, nchain - 0.5)
     plt.yticks(range(nchain), cnlist)
