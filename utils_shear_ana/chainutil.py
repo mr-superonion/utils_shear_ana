@@ -16,6 +16,7 @@
 #
 # python lib
 
+import os
 import numpy as np
 from scipy import stats
 from chainconsumer import ChainConsumer
@@ -167,19 +168,19 @@ def read_cosmosis_max(infname):
 
 
 def estimate_parameters_from_chain(
-    infname, ptype="map", blind=True, do_write=True, params_dict=None
+    infname, blind=True, do_write=True, params_dict=None
 ):
     """Estimate the parameters and write it to file
 
     Args:
         infname (str):      input file name for chain
-        chain (ndarray):    input chain [default: None]
         blind (bool):       whether blind the output
         do_write (bool):    whether write down the estimated parameters
         params_dict (dict): A dictionary of parameters to replace
     Returns:
         max_post (dict):    maximum a posterior
     """
+    ptype = "map"
     chain = read_cosmosis_chain(infname, flip_dz=False, as_correction=True)
     # change the parameters in the param_dict
     if params_dict is not None:
@@ -198,9 +199,8 @@ def estimate_parameters_from_chain(
 
     names = list(chain.dtype.names)
     # remove those derived parameters
-    if ptype != "map":
-        for nn in ["prior", "like", "post", "weight"]:
-            names.remove(nn)
+    for nn in ["prior", "like", "post", "weight"]:
+        names.remove(nn)
     c = ChainConsumer()
     c.add_chain(
         [chain[nn] for nn in names],
@@ -208,48 +208,20 @@ def estimate_parameters_from_chain(
         parameters=names,
         posterior=chain["post"],
     )
-    if ptype == "map":
-        out = c.analysis.get_max_posteriors()
-    else:
-        c.configure(
-            global_point=False,
-            statistics=ptype,
-        )
-        out = c.analysis.get_summary()
-        return
+    out = c.analysis.get_max_posteriors()
     if do_write:
         npar_write = 0
         lines = []
         start = False
-        end = False
         with open(infname, "r") as infile:
             for _ in range(1000):
                 ll = infile.readline()
                 if ll == "## END_OF_VALUES_INI\n":
-                    assert start, "not started yet?"
-                    end = True
-                    start = False
-                    # print('end')
-                if start:
-                    tmp = ll.split("## ")[-1]
-                    nn = tmp.split(" = ")[0]
-                    if nn in names:
-                        # write the estimated parameter to the string
-                        if nn == "a_s":
-                            # the a_s in chain is scaled to by 1e9 !
-                            # here, we rescaled it back
-                            tmp = "%s = %.6E\n" % (nn, out[nn] / 1e9)
-                        elif nn == "ombh2":
-                            tmp = "%s = %.6E\n" % (nn, out[nn] / 1e3)
-                        else:
-                            tmp = "%s = %.6E\n" % (nn, out[nn])
-                        npar_write += 1
-                    lines.append(tmp)
-                if end:
                     break
+                if start:
+                    lines.append(record_line(ll, out, names))
                 if ll == "## START_OF_VALUES_INI\n":
                     start = True
-                    # print('start')
         assert npar_write <= len(
             names
         ), "Not all the estimated parameters are writed into string, \
@@ -258,29 +230,70 @@ def estimate_parameters_from_chain(
             outfile.write("".join(lines))
     return out
 
+def resample_chain(samples, num_samples=None):
+    """
+    Resample from the given samples based on their associated weights.
+    Args:
+        samples (ndarray):      ndarray of samples
+        num_samples (int):      number of samples to draw; defaults to the
+                                number of original samples
+    Returns:
+        resampled ndarray of samples
+    """
+    if num_samples is None:
+        num_samples = len(samples)
+    weights = samples["weight"]
+    prob = weights/np.sum(weights)
+    indices = np.random.choice(len(samples), size=num_samples, p=prob)
+    return samples[indices]
 
-# from getdist import MCSamples
-# from tensiometer import gaussian_tension
-# def get_neff_from_chain(data):
-#     """Gets the effective degrees of freedom from nested chain
+def record_line(ll, ss, names):
+    tmp = ll.split("## ")[-1]
+    nn = tmp.split(" = ")[0]
+    if nn in names:
+        # write the estimated parameter to the string
+        if nn == "a_s":
+            # the a_s in chain is scaled to by 1e9 !
+            # here, we rescaled it back
+            tmp = "%s = %.6E\n" % (nn, ss[nn] / 1e9)
+        elif nn == "ombh2":
+            tmp = "%s = %.6E\n" % (nn, ss[nn] / 1e3)
+        else:
+            tmp = "%s = %.6E\n" % (nn, ss[nn])
+    else:
+        tmp = tmp.split("##")[0]
+    return tmp
 
-#     Args:
-#         data (ndarray):  nested chains
-#     Returns:
-#         neff (float):  effective degrees of freedom
-#     """
-#     names = list(data.dtype.names)
-#     for nn in names:
-#         if nn in ["like", "post", "weight", "prior", "s_8"]:
-#             names.remove(nn)
-#     c = MCSamples(
-#         samples=[data[nn] for nn in names],
-#         loglikes=data["like"],
-#         weights=data["weight"],
-#         names=names,
-#     )
-#     p = MCSamples(
-#         samples=[data[nn] for nn in names], names=names, weights=np.exp(data["prior"])
-#     )
-#     neff = gaussian_tension.get_Neff(c, prior_chain=p)
-#     return neff
+def sample_datv_from_chain(infname, out_dir, nsample=100):
+    """Estimate the parameters and write it to file
+
+    Args:
+        infname (str):      input file name for chain
+        out_dir (str):      output dictionary name
+        nsample (int):      number of generated samples
+    """
+    chain = read_cosmosis_chain(infname, flip_dz=False, as_correction=True)
+    names = list(chain.dtype.names)
+    # remove those derived parameters
+    for nn in ["prior", "like", "post", "weight"]:
+        names.remove(nn)
+    chain = resample_chain(samples=chain, num_samples=nsample)
+    for i in range(nsample):
+        ss = chain[i]
+        lines = []
+        start = False
+        with open(infname, "r") as infile:
+            for _ in range(1000):
+                line = infile.readline()
+                if line == "## END_OF_VALUES_INI\n":
+                    break
+                if start:
+                    lines.append(record_line(line, ss, names))
+                if line == "## START_OF_VALUES_INI\n":
+                    start = True
+        # write results
+        outfname = os.path.join(out_dir, "%02d.ini" % i)
+        with open(outfname, "wt") as outfile:
+            outfile.write("".join(lines))
+    return
+

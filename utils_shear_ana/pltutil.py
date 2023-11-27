@@ -649,13 +649,15 @@ def plot_chain_corner(
     scale=2.5,
     stat_method=stat0,
     kde=kde0,
-    plot_hists=True,
     shade=False,
     color_use=None,
     line_width=1.5,
     line_styles=None,
     ax=None,
     contour_labels=None,
+    plot_hists=True,
+    correct_boundary=True,
+    correct_multbias=True,
 ):
     """Makes the corner plots for posteriors
 
@@ -666,12 +668,12 @@ def plot_chain_corner(
         nlist (list):       a list of parameters
         truth (list):       a list of truth parameters
         kde (float):        kernal density esitamte
-        plot_hists (bool):  whether ploting 1D histogram
         shade (bool):       whether shade or not
         color_use (list):   colors for contours
         line_width (float): line width
         contour_labels (float):
                             contour label, "sigma" or "confidence"
+        plot_hists (bool):  whether ploting 1D histogram
     Returns:
         fig (figure):       figure
     """
@@ -705,6 +707,11 @@ def plot_chain_corner(
     elif isinstance(shade, bool):
         shade = [shade] * len(clist)
 
+    if isinstance(correct_boundary, bool):
+        correct_boundary = [correct_boundary] * len(clist)
+    if isinstance(correct_multbias, bool):
+        correct_multbias = [correct_multbias] * len(clist)
+
     npar = len(nlist)
     if blind_by is not None:
         assert (
@@ -712,7 +719,8 @@ def plot_chain_corner(
         ), "The blinding prarmeter ('blind_by') \
             is not in the chain name list (cnlist)"
         c = ChainConsumer()
-        oo = clist[cnlist.index(blind_by)]
+        bid = cnlist.index(blind_by)
+        oo = clist[bid]
         c.add_chain(
             [oo[ni] for ni in nlistb],
             weights=oo["weight"],
@@ -721,6 +729,8 @@ def plot_chain_corner(
             kde=kde,
             statistics=stat_method,
             plot_point=False,
+            correct_boundary=correct_boundary[bid],
+            correct_multbias=correct_multbias[bid],
         )
         stat = c.analysis.get_summary()
         avel = np.array([stat[latexDict[ni]][1] for ni in nlistb])
@@ -747,6 +757,8 @@ def plot_chain_corner(
                 name=chain_name,
                 statistics=stat_method,
                 plot_point=False,
+                correct_boundary=correct_boundary[ii],
+                correct_multbias=correct_multbias[ii],
             )
         else:
             c.add_chain(
@@ -759,6 +771,8 @@ def plot_chain_corner(
                 statistics=stat_method,
                 plot_point=False,
                 color=color_use[ii],
+                correct_boundary=correct_boundary[ii],
+                correct_multbias=correct_multbias[ii],
             )
         del ll, ll2, nlist2
     if len(cnlist) <= 3:
@@ -828,7 +842,7 @@ def plot_chain_corner(
     nlist2 = [nlist[ii] for ii in idx]
     if ax is None:
         exts = get_summary_extents(stat, nlist2, clist, scale=scale, blind_shift=avel)
-        fig = c.plotter.plot(figsize=2.0, extents=exts, truth=truth)
+        fig = c.plotter.plot_distributions(figsize=2.0, extents=exts, truth=truth)
         fig.subplots_adjust(bottom=bb, left=tt)
         c.plotter.restore_rc_params()
         return fig
