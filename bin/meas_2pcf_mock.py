@@ -13,6 +13,7 @@ from utils_shear_ana import catutil
 from utils_shear_ana import mea2pcf
 import astropy.table as astTable
 
+# correction for shell thickness
 corrs = np.array([1.17133725, 1.08968149, 1.06929737, 1.05591374])
 
 

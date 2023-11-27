@@ -11,7 +11,7 @@ from utils_shear_ana import mea2pcf
 import astropy.table as astTable
 
 ntheta = 17         # number of angular bins
-corDF = treecorr.GGCorrelation(
+cor = treecorr.GGCorrelation(
     nbins=ntheta,
     min_sep=2.188,
     max_sep=332.954,
@@ -20,7 +20,6 @@ corDF = treecorr.GGCorrelation(
 
 nzs =   4           # number of tomographic redshift bins
 blind_ver='cat0'
-cor =   mea2pcf.corDF
 wrkDir= os.environ['homeWrk']
 
 dataG=[]
